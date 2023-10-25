@@ -23,7 +23,7 @@ library(markdown)
 #------------#
 shinyUI(fluidPage(
   
-  includeCSS("www/app.css"),
+  #includeCSS("www/app.css"),
   
   navbarPage(id="MetaImpact", title="MetaImpact",
              theme = shinytheme("readable"),
