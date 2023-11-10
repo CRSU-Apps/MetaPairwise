@@ -25,7 +25,7 @@ shinyUI(fluidPage(
   
   #includeCSS("www/app.css"),
   
-  navbarPage(id="MetaImpact", title="MetaImpact",
+  navbarPage(id="MetaPairwise", title="MetaPairwise",
              theme = shinytheme("readable"),
              
             
@@ -78,7 +78,7 @@ shinyUI(fluidPage(
                                                   p(tags$ul(tags$li("For long format, a column labelled ", tags$strong("N"), " containing the number of participants in each arm of the study.
                                                        For wide format, two columns labelled ", tags$strong("N.1 & N.2"), " containing the number of participants for study arm 1 and 2 respectively "))))
                              ))
-             ),                      
+             ),
              # Make it such that a user can still use example data even after uploading their own (maybe a tick box after uploading their own to 'use' example instead or 'remove data')
              
              
@@ -89,64 +89,62 @@ shinyUI(fluidPage(
              tabPanel("Calculator",
                       # Meta-analysis #
                       #---------------#
-                      h3("Step 1: Create evidence base via meta-analysis"),
-                      br(),
-                      # Run analysis buttons #
-                      fluidRow(align = 'center',
-                               column(4, actionButton("FreqRun", "Run frequentist meta-analysis", class="btn-primary btn-lg"),
-                                      div(style = "height:20px"),
-                                      actionButton("BayesRun", "Run Bayesian meta-analysis", class="btn-primary btn-lg")),
-                               # Inputs #
-                               column(8, bsCollapse(id="SynthesisInputs", open="Synthesis Options",
-                                                    bsCollapsePanel(title="Synthesis Options", style='info',
-                                                                    column(6, conditionalPanel(condition = "output.ContBin=='continuous'",
-                                                                                               radioButtons("OutcomeCont", "Outcome for continuous data:", c("Mean Difference (MD)" = "MD","Standardised Mean Difference (SMD)" = "SMD"))),
-                                                                           conditionalPanel(condition = "output.ContBin=='binary'",
-                                                                                            radioButtons("OutcomeBina", "Outcome for binary data:", c("Odds Ratio (OR)" = "OR","Risk Ratio (RR)" = "RR", "Risk Difference (RD)" = "RD"))),
-                                                                           radioButtons("FixRand", "Model selection:", c("Fixed-effects model (FE)" = "fixed", "Random-effects model (RE)" = "random"))),
-                                                                    column(6, fluidRow(column(6, selectInput(inputId = "Pair_Trt", label = "Select Treatment", choices = NULL)),
-                                                                                       column(6, selectInput(inputId = "Pair_Ctrl", label = "Select Comparator", choices = NULL))),
-                                                                           fluidRow(bsCollapsePanel(title="Bayesian options", style='info',
-                                                                                                    column(6, radioButtons("prior", "Vague prior for between study standard deviation:", c("Half-Cauchy(0,0.5)" = "half-cauchy", "Uniform(0,2)" = "uniform", "Half-Normal(0,1)" = "half-normal")),
-                                                                                                           actionButton("bayes_help", "Help", class="btn-xs", style="position: absolute; left: 0; top: 220px")),
-                                                                                                    column(6, numericInput("chains", "Number of chains:", value=2, min=1),
-                                                                                                           numericInput("iter", "Number of iterations:", value=4000, min=1),
-                                                                                                           numericInput("burn", "Burn-in:", value=400, min=1))
-                                                                           ))
-                                                                    ))))),
-                      # Outputs #
-                      # Frequentist #
-                      conditionalPanel(condition = "input.FreqRun!=0",
-                                       fluidRow(p(htmlOutput("SynthesisSummaryFreq")),
-                                                p("To change the model options, please adjust synthesis options above and re-run analysis."),
-                                                bsCollapse(id="FreqID", open="Frequentist Analysis", bsCollapsePanel(title="Frequentist Analysis", style='success',
-                                                                                                                     column(5,align='center', withSpinner(htmlOutput("SummaryTableF"), type=6), #Summary table
-                                                                                                                            fluidRow(div(style="display: inline-block;", p(strong("Model fit statistics"))),
-                                                                                                                                     div(style="display: inline-block;", dropMenu(dropdownButton(size='xs',icon=icon('info')), align='left',
-                                                                                                                                                                                  h6("Model fit statistics"),
-                                                                                                                                                                                  p("Akaike information criterion (AIC) and Bayesian information criterion (BIC) measure 'model performance' whilst taking into account model complexity."),
-                                                                                                                                                                                  p("The smaller the AIC or BIC, the 'better' the model. Values are best interpreted between models rather than alone.")))),
-                                                                                                                            htmlOutput("ModelFitF")),
-                                                                                                                     column(6, align='center', offset=1, withSpinner(plotOutput("ForestPlotPairF"), type=6),    #Forest plot
-                                                                                                                            downloadButton('forestpairF_download', "Download forest plot"), radioButtons('forestpairF_choice', "", c('pdf','png'), inline=TRUE)))))),
-                      # Bayesian #
-                      conditionalPanel(condition = "input.BayesRun!=0",
-                                       fluidRow(p(htmlOutput("SynthesisSummaryBayes")),
-                                                p("To change the model options, please adjust synthesis options above and re-run analysis."),
-                                                bsCollapse(id="BayesID", open="Bayesian Analysis", bsCollapsePanel(title="Bayesian Analysis", style='success',
-                                                                                                                   column(5, align='center', withSpinner(htmlOutput("SummaryTableB"), type=6),   # Summary table
-                                                                                                                          fluidRow(div(style="display: inline-block;", p(strong("Model assessment"))),
-                                                                                                                                   div(style="display: inline-block;", dropMenu(dropdownButton(size='xs',icon=icon('info')), align='left',
-                                                                                                                                                                                h6("Model assessment"),
-                                                                                                                                                                                p("For Bayesian models it is key that the model has converged (i.e. that the MCMC algorithm found the optimal solution)"),
-                                                                                                                                                                                p("If a model has converged, Rhat should be smaller than 1.01 and the trace plot (parameter estimates over all iterations) should be 'spiky' and show no signs of distinct pattens. Also note that for ORs and RRs, the parameter estimate has been log-transformed.")))),
-                                                                                                                          htmlOutput("ModelFitB"),
-                                                                                                                          plotOutput("TracePlot"),                            # Trace plot
-                                                                                                                          downloadButton('tracepair_download', "Download trace plot"), radioButtons('tracepair_choice', "", c('pdf','png'), inline=TRUE)),
-                                                                                                                   column(6, align='center', offset=1, withSpinner(plotOutput("ForestPlotPairB"), type=6),   # Forest plot
-                                                                                                                          downloadButton('forestpairB_download', "Download forest plot"), radioButtons('forestpairB_choice', "", c('pdf','png'), inline=TRUE))))
-                                       )),
-                      )
-             
-  )))
+                      sidebarLayout(
+                        sidebarPanel(
+                          h4("Synthesis Options"),
+                          fluidRow(column(6,selectInput(inputId = "Pair_Trt", label = "Select Treatment", choices = NULL)),
+                                   column(6,selectInput(inputId = "Pair_Ctrl", label = "Select Comparator", choices = NULL))),
+                          radioButtons("FixRand", "Model selection:", c("Fixed-effects model (FE)" = "fixed", "Random-effects model (RE)" = "random")),
+                          conditionalPanel(condition = "output.ContBin=='continuous'",
+                                           radioButtons("OutcomeCont", "Outcome for continuous data:", c("Mean Difference (MD)" = "MD","Standardised Mean Difference (SMD)" = "SMD"))),
+                          conditionalPanel(condition = "output.ContBin=='binary'",
+                                           radioButtons("OutcomeBina", "Outcome for binary data:", c("Odds Ratio (OR)" = "OR","Risk Ratio (RR)" = "RR", "Risk Difference (RD)" = "RD"))),
+                          conditionalPanel(condition= "input.AnalysisType=='Bayesian Analysis'",
+                                           h5("Bayesian Options"),
+                                           column(6, radioButtons("prior", "Vague prior for between study standard deviation:", c("Half-Cauchy(0,0.5)" = "half-cauchy", "Uniform(0,2)" = "uniform", "Half-Normal(0,1)" = "half-normal")),
+                                                  actionButton("bayes_help", "Help", class="btn-xs", style="position: absolute; left: 0; top: 220px")),
+                                           column(6, numericInput("chains", "Number of chains:", value=2, min=1),
+                                                  numericInput("iter", "Number of iterations:", value=4000, min=1),
+                                                  numericInput("burn", "Burn-in:", value=400, min=1))
+                        ),width=3),
+                         mainPanel(
 
+                          tabsetPanel(id="AnalysisType",
+                                      type="tabs",
+                                      tabPanel("Frequentist Analysis",
+                                               fluidRow(align="center",
+                                                        br(),
+                                                        actionButton("FreqRun", "Run frequentist meta-analysis", class="btn-primary btn-lg")),
+                                                                   conditionalPanel(condition = "input.FreqRun!=0",
+                                                                                    fluidRow(p(htmlOutput("SynthesisSummaryFreq"))),
+                                                                                             p("To change the model options, please adjust synthesis options and re-run analysis."),
+                                                                                    fluidRow(align='center', withSpinner(htmlOutput("SummaryTableF"))),
+                                                                                    fluidRow(p(strong("Model fit statistics"))),
+                                                                                             dropMenu(dropdownButton(size='xs',icon=icon('info')), align='left',
+                                                                                             h6("Model fit statistics"),
+                                                                                             p("Akaike information criterion (AIC) and Bayesian information criterion (BIC) measure 'model performance' whilst taking into account model complexity."),
+                                                                                             htmlOutput("ModelFitF")),
+                                                                                    fluidRow(column(10, withSpinner(plotOutput("ForestPlotPairF"))),
+                                                                                             column(2,radioButtons('forestpairF_choice', "Download forest plot as:", c('pdf','png')),
+                                                                                                      downloadButton('forestpairF_download', "Download forest plot"),    #Forest plot
+                                                                                                    )))),
+                                      tabPanel("Bayesian Analysis",
+                                               fluidRow(align="center",
+                                                        br(),
+                                                        actionButton("BayesRun", "Run Bayesian meta-analysis", class="btn-primary btn-lg")),
+                                                                   conditionalPanel(condition = "input.BayesRun!=0",
+                                                                                    fluidRow(p(htmlOutput("SynthesisSummaryBayes")),
+                                                                                             p("To change the model options, please adjust synthesis options above and re-run analysis.")),
+                                                                                   #  fluidRow(align='center', withSpinner(htmlOutput("SummaryTableB"))),   # Summary table
+                                                                                     fluidRow(p(strong("Model assessment"))),
+                                                                                             dropMenu(dropdownButton(size='xs',icon=icon('info')), align='left',
+                                                                                             h6("Model assessment"),
+                                                                                             p("For Bayesian models it is key that the model has converged (i.e. that the MCMC algorithm found the optimal solution)"),
+                                                                                             p("If a model has converged, Rhat should be smaller than 1.01 and the trace plot (parameter estimates over all iterations) should be 'spiky' and show no signs of distinct pattens. Also note that for ORs and RRs, the parameter estimate has been log-transformed.")))),
+                                                                                             htmlOutput("ModelFitB"),
+                                                                                             plotOutput("TracePlot"),                            # Trace plot
+                                                                                             downloadButton('tracepair_download', "Download trace plot"), radioButtons('tracepair_choice', "", c('pdf','png'))),
+                                                                                       #      withSpinner(plotOutput("ForestPlotPairB"),   # Forest plot
+                                                                                             downloadButton('forestpairB_download', "Download forest plot"),
+                                                                                             radioButtons('forestpairB_choice', "", c('pdf','png'))
+                                                                                             ))))))
