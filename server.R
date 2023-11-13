@@ -36,7 +36,7 @@ source("ForestFunctions.R", local=TRUE)
 # Server Content #
 #----------------#
 function(input, output, session) {
-  #source("DownloadButtons.R", local=TRUE)  # needs to be within server
+  source("DownloadButtons.R", local=TRUE)  # needs to be within server
   
   #------------------#
   # Warning messages #

@@ -21,7 +21,8 @@ library(markdown)
 
 # UI Content #
 #------------#
-shinyUI(fluidPage(
+shinyUI(
+  fluidPage(
   
   includeCSS("www/app.css"),
   
@@ -182,11 +183,24 @@ shinyUI(fluidPage(
                                                                          p("If a model has converged, Rhat should be smaller than 1.01 and the trace plot (parameter estimates over all iterations) should be 'spiky' and show no signs of distinct pattens. Also note that for ORs and RRs, the parameter estimate has been log-transformed.")
                                                                          ),
                                                                 htmlOutput("ModelFitB"),
-                                                                withSpinner(plotOutput("TracePlot")),                            # Trace plot
-                                                                downloadButton('tracepair_download', "Download trace plot"), radioButtons('tracepair_choice', "", c('pdf','png')),
-                                                                withSpinner(plotOutput("ForestPlotPairB")),   # Forest plot
-                                                                downloadButton('forestpairB_download', "Download forest plot"),
-                                                                radioButtons('forestpairB_choice', "", c('pdf','png'))
+                                                                h3("Trace Plot"),
+                                                                fluidRow(column(10,withSpinner(plotOutput("TracePlot"))
+                                                                                ),                            # Trace plot
+                                                                         column(2,radioButtons('tracepair_choice', "Download trace plot as:", c('pdf','png')),
+                                                                                  downloadButton('tracepair_download', "Download trace plot")
+                                                                                )
+                                                                         ),
+                                                                br(),
+                                                                br(),
+                                                                br(),
+                                                                br(),
+                                                                h3("Forest plot"),
+                                                                fluidRow(column(10,withSpinner(plotOutput("ForestPlotPairB")),   # Forest plot)
+                                                                                ),                            
+                                                                         column(2,radioButtons('forestpairB_choice', "Download forest plot as:", c('pdf','png')),
+                                                                                  downloadButton('forestpairB_download', "Download forest plot")
+                                                                                )
+                                                                         )
                                                                                              
                                                                 )
                                                )
