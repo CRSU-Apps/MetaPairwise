@@ -41,9 +41,9 @@ shinyUI(
                                 br(),
                                 p("If you wish to explore the app without using your own data, you are welcome to choose one of the example datasets below."),
                                 p("Example datasets are based on (network) meta-analyses reviewing the effect anti-vasuclar endothelial growth factor has on diabetic macular oedema. Visual acuity (VA) outcomes were reported and chosen for these examples. The continuous outcome example is extracted from a meta-analysis by Virgili et al which can be found ",
-                                a(href="https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD007419.pub6/full", "here."),
-                                "The binary outcome example is extracted from a meta-analysis by Pham et al which can be found ",
-                                a(href="https://bmjopen.bmj.com/content/9/5/e022031", "here.")
+                                  a(href="https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD007419.pub6/full", "here."),
+                                  "The binary outcome example is extracted from a meta-analysis by Pham et al which can be found ",
+                                  a(href="https://bmjopen.bmj.com/content/9/5/e022031", "here.")
                                 ),
                                 p("Options to explore an example network meta-analysis will be available in the near future."),
                                 radioButtons("ChooseExample", "Example Datasets Available", c("Continuous outcome: Change in VA in terms of LogMAR (negative change in LogMAR = improved vision)" = "continuousEx",
@@ -59,17 +59,23 @@ shinyUI(
                         tabsetPanel(id='format_instructions',
                                          
                                     tabPanel("Binary Data",
-                                             p("MetaImpact can take data in wide format (every row is per study) or long format (every row is per  study arm)."),
-                                             p("The data file should contain five or eight columns columns for long or wide format respectively. Headings of columns are case sensitive."),
-                                             p("The following columns are needed:"),
-                                             p(tags$ul(tags$li("A column labelled ", tags$strong("StudyID"), " containing the study identifier, starting from 1, then 2, 3, 4... etc."))),
-                                             p(tags$ul(tags$li("A column labelled ", tags$strong("Study"), " containing the name (e.g., author,year) of the study. The study name must be unique for each study."))),
-                                             p(tags$ul(tags$li("For long format, a column labelled ", tags$strong("T"), " containing the name or label of treatment used in each arm of the study.
-                                                                For wide format, two columns labelled ", tags$strong("T.1 & T.2"), " containing the name or label of treatment given for study arm 1 and 2 respectively "))),
-                                             p(tags$ul(tags$li("For long format, a column labelled ", tags$strong("R"), " containing the number of participants with the outcome of interest in each arm of the study.
-                                                                For wide format, two columns labelled ", tags$strong("R.1 & R.2"), " containing the number of participants with the outcome of interest for study arm 1 and 2 respectively "))),
-                                             p(tags$ul(tags$li("For long format, a column labelled ", tags$strong("N"), " containing the number of participants in each arm of the study.
-                                                                For wide format, two columns labelled ", tags$strong("N.1 & N.2"), " containing the number of participants for study arm 1 and 2 respectively ")))
+                                               p("MetaPairwise can take data in wide format (every row is per study) or long format (every row is per  study arm)."),
+                                               p("The data file should contain five or eight columns columns for long or wide format respectively. Headings of columns are case sensitive."),
+                                               p("The following columns are needed:"),
+                                               p(tags$ul(tags$li("A column labelled ", tags$strong("StudyID"), " containing the study identifier, starting from 1, then 2, 3, 4... etc."))),
+                                               p(tags$ul(tags$li("A column labelled ", tags$strong("Study"), " containing the name (e.g., author,year) of the study. The study name must be unique for each study."))),
+                                               p(tags$ul(tags$li("For long format, a column labelled ", tags$strong("T"), " containing the name or label of treatment used in each arm of the study.
+                                                                  For wide format, two columns labelled ", tags$strong("T.1 & T.2"), " containing the name or label of treatment given for study arm 1 and 2 respectively ")
+                                                         )
+                                                 ),
+                                               p(tags$ul(tags$li("For long format, a column labelled ", tags$strong("R"), " containing the number of participants with the outcome of interest in each arm of the study.
+                                                                  For wide format, two columns labelled ", tags$strong("R.1 & R.2"), " containing the number of participants with the outcome of interest for study arm 1 and 2 respectively ")
+                                                         )
+                                                 ),
+                                               p(tags$ul(tags$li("For long format, a column labelled ", tags$strong("N"), " containing the number of participants in each arm of the study.
+                                                                  For wide format, two columns labelled ", tags$strong("N.1 & N.2"), " containing the number of participants for study arm 1 and 2 respectively ")
+                                                         )
+                                                 )
                                              ),
                                          
                                     tabPanel("Continuous Data", 

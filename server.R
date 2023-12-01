@@ -4,32 +4,25 @@
 #----------------#
 # load libraries #
 #----------------#
-library(netmeta)
-library(sjlabelled)
-library(gemtc)
 library(tidyverse)
 library(metafor)
 library(ggplot2)
 library(tidyr)
-library(stringr)
 library(tidybayes)
 library(dplyr)
-library(ggridges)
 library(glue)
 library(forcats)
 library(rstan)
 library(MetaStan)
 library(purrr)
-library(splines2)
+
 
 #-----------------------------#
 # load user-written functions #
 #-----------------------------#
 
 source("MAFunctions.R",local = TRUE)
-#source("SampleSizeFunctions.R", local=TRUE)
 source("ForestFunctions.R", local=TRUE)
-#source("LanganPlots.R", local=TRUE)
 
 
 #----------------#
@@ -37,95 +30,6 @@ source("ForestFunctions.R", local=TRUE)
 #----------------#
 function(input, output, session) {
   source("DownloadButtons.R", local=TRUE)  # needs to be within server
-  
-  #------------------#
-  # Warning messages #
-  #------------------#
-  BadSampleSizes <- function(){
-    showModal(modalDialog(
-      title = "Unsuitable Sample Sizes",
-      easyClose = FALSE,
-      p("The total sample size is assuming two arms of equal size. Therefore, please enter ", tags$strong("even integers.")),
-      br(),
-      modalButton("Close warning"),
-      footer = NULL
-    ))
-  }
-  NoBayesian <- function(){
-    showModal(modalDialog(
-      title = "Feature not yet available",
-      easyClose = FALSE,
-      p("Calculating the power of new studies with set sample size(s) is not ready yet within the Bayesian framework. Please ", tags$strong("choose frequentist.")),
-      br(),
-      modalButton("Close warning"),
-      footer = NULL
-    ))
-  }
-  NoNMA <- function(){
-    showModal(modalDialog(
-      title = "Feature not yet available",
-      easyClose = FALSE,
-      p("Synthesising evidence with an NMA is not quite ready yet. Please ", tags$strong("choose pairwise.")),
-      br(),
-      modalButton("Close warning"),
-      footer = NULL
-    ))
-  }
-  NoRandomContours <- function(){
-    showModal(modalDialog(
-      title = "Feature not yet available",
-      easyClose = FALSE,
-      p("Drawing the significance contours for a random-effects meta-analysis is not quite ready yet. Please either ", tags$strong("choose fixed-effects"), " or ", tags$strong("uncheck contours option.")),
-      br(),
-      modalButton("Close warning"),
-      footer = NULL
-    ))
-  }
-  FixedPredInt <- function(){
-    showModal(modalDialog(
-      title = "Option combination not applicable",
-      easyClose = FALSE,
-      p("Within a fixed-effects model, the between-study heterogeneity is set to zero, therefore a 95% predictive interval would be equivalent to the 95% confidence interval (represented by the width of the diamond) and is not a plottable option."),
-      br(),
-      modalButton("Close warning"),
-      footer = NULL
-    ))
-  }
-  SigContourOnly <- function(){
-    showModal(modalDialog(
-      title = "Feature not yet available",
-      easyClose = FALSE,
-      p("Currently, the contours on the extended funnel plot are only for when the desired impact of the new evidence base is related to levels of p-values."),
-      p("Therefore, if you wish to plot the simulated 'new trials' from the power calculations, please either: ", tags$ol(tags$li("ensure that the ", strong("type of impact"), " is set to ", strong("Significant p-value"), ", or"), tags$li("uncheck the ", strong("contours"), " option"))),
-      p("If you do not wish to plot the simulated 'new trials', please ", strong("uncheck"), " the plot simulated trials option."),
-      br(),
-      modalButton("Close warning"),
-      footer = NULL
-    ))
-  }
-  DiffSigValues <- function(){
-    showModal(modalDialog(
-      title = "Significance values don't match",
-      easyClose = FALSE,
-      p("If you wish to plot the simulated 'new trials' on top of the extended funnel plot with contours, then the significance level/cut-off value needs to match."),
-      p("Please ensure that the ", strong("Sig. level for contours"), " plot option is set to the same value as the ", strong("cut-off calculator"), " option."),
-      p("If you do not wish to plot the simulated 'new trials' with the contour option of the extended funnel plot, please ", strong("uncheck"), " the plot simulated trials and/or contour option."),
-      br(),
-      modalButton("Close warning"),
-      footer = "If this error appears after changing the impact type to 'significant p-value' due to a previous warning message, and your significance levels/cut-off values match, please ignore."
-    ))
-  }
-  NoPlotMultipleSampleSizes <- function(){
-    showModal(modalDialog(
-      title = "Feature not yet available",
-      easyClose = FALSE,
-      p("Plotting the simulated 'new trials' of multiple sample sizes is not yet available. Please either ", tags$strong("uncheck 'plot simulated trials'"), " option or ", tags$strong("specify one sample size.")),
-      br(),
-      modalButton("Close warning"),
-      footer = NULL
-    ))
-  }
-  
   
   
   ### Load and present Data ###
@@ -145,15 +49,7 @@ function(input, output, session) {
     levels <- levels(as_vector(lapply(data[grep("^T", names(data), value=TRUE)], factor)))  # extract treatment names/levels
     return(list(data=data, levels=levels))
   })
-  
-  # reference <- reactive({               # Select default reference treatment
-  #    file <- input$data
-  #    if (is.null(file)) {
-  #      return("laser")
-  #    } else {
-  #      return(data()$levels[1])
-  #    }
-  #  })
+
   pairwise_ref <- function(trt_ctrl) {   # pairwise options
     if (trt_ctrl=='trt') {
       ref <- reactive({
@@ -228,6 +124,10 @@ function(input, output, session) {
     reference treatment ", strong(input$Pair_Ctrl), ".", sep="")
   })
   output$SynthesisSummaryBayes <- renderText({BayesSummaryText()})
+  
+  
+  
+  
   
   
   ### Run frequentist Pairwise MA ###
@@ -306,31 +206,6 @@ function(input, output, session) {
   output$ModelFitF <- renderUI({              # Model fit statistics
     freqpair()$ModelFit
   })
-  
-  
-  
-  
-  
-  ### Run frequentist NMA ###
-  #---------------------#
-  
-  #freqnma <- eventReactive( input$FreqRun, {                   # Run frequentist NMA
-  #  if (input$Pairwise_NMA==FALSE) {
-  #    NoNMA()
-  #    #FreqNMA(data=WideData(), outcome=outcome(), CONBI=ContBin(), model=input$FixRand, ref=input$Reference)
-  #  }
-  #})
-  #output$NetworkPlotF <- renderPlot({   # Network plot
-  #  netgraph(freqnma()$MAObject, thickness = "number.of.studies", number.of.studies = TRUE, plastic=FALSE, points=TRUE, cex=1.25, cex.points=3, col.points=1, col="gray80", pos.number.of.studies=0.43,
-  #           col.number.of.studies = "forestgreen", col.multiarm = "white", bg.number.of.studies = "black", offset=0.03)
-  #  title("Network plot of all studies")
-  #})
-  #output$ForestPlotNMAF <- renderPlot({    # Forest plot
-  #  FreqNMAForest(NMA=freqnma()$MAObject, model=input$FixRand, ref=input$Reference)
-  #  title("Forest plot of outcomes")
-  #})
-  
-  ## Double zero arms are not included in analysis - need to add warning
   
   
   
@@ -424,50 +299,6 @@ function(input, output, session) {
   output$TracePlot <- renderPlot({            # Trace plot
     bayespair()$Trace
   })
-  
-  
-  
-  
-  ### Run Bayesian NMA ###
-  #------------------#
-  
-  #Bayes <- eventReactive( input$BayesRun & input$Pairwise_NMA=='FALSE', {                 # Run Bayesian NMA
-  #  NoNMA()
-  #BayesMA(data=LongData(), CONBI=ContBin(), outcome=outcome(), model=input$FixRand, ref=input$Reference, prior=input$prior)
-  #})
-  
-  
-  #output$NetworkPlotB <- renderPlot({  # Network plot
-  #  plot(Bayes()$Network)
-  #  title("Network plot of all studies")
-  #})
-  
-  #output$ForestPlotB <- renderPlot({   # Forest plot
-  #  forest(Bayes()$RelEffects, digits=3)
-  #  title("Forest plot of outcomes")
-  #})
-  
-  #output$TauB <- renderText({          # Between-study standard deviation
-  #  TauDesc(ResultsSum=Bayes()$ResultsSum, outcome=outcome(), model=input$FixRand)
-  #})
-  
-  #output$DICB <- renderTable({         # DIC
-  #  Bayes()$DIC
-  #}, digits=3, rownames=TRUE, colnames=FALSE)
-  
-  
-  
-  
-
-  ### Links ###
-  #-------#
-  
-  #observeEvent(input$link_to_tabpanel_evsynth, {
-  #  updateTabsetPanel(session, "MetaImpact", "Evidence Synthesis")
-  #})
-  
-  
-  
   
   
 }
