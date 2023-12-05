@@ -1066,4 +1066,4 @@ forest.rma.CN <- function(x, y,                              # y is the other mo
   
 }
 
-environment(forest.rma.CN) <- environment(forest.default)
+# environment(forest.rma.CN) <- environment(forest.default)

@@ -17,19 +17,10 @@ library(MetaStan)
 library(purrr)
 
 
-#-----------------------------#
-# load user-written functions #
-#-----------------------------#
-
-source("MAFunctions.R",local = TRUE)
-source("ForestFunctions.R", local=TRUE)
-
-
 #----------------#
 # Server Content #
 #----------------#
 function(input, output, session) {
-  source("DownloadButtons.R", local=TRUE)  # needs to be within server
   
   
   ### Load and present Data ###
@@ -199,6 +190,34 @@ function(input, output, session) {
     freqpair()$Forest
   })
   
+  output$forestpairF_download <- downloadHandler(
+    filename = function() {
+      paste0("PairwiseAnalysis.", input$forestpairF_choice)
+    },
+    content = function(file) {
+      if (input$forestpairF_choice=='pdf') {pdf(file=file)}
+      else {png(file=file)}
+      if (input$FixRand=='fixed') { 
+        if (outcome()=='OR' | outcome()=='RR') {
+          forest(freqpair()$MA$MA.Fixed, atransf=exp)
+          title("Forest plot of studies with overall estimate from fixed-effects model")
+        } else {
+          forest(freqpair()$MA$MA.Fixed)
+          title("Forest plot of studies with overall estimate from fixed-effects model")
+        }
+      } else {
+        if (outcome()=='OR' | outcome()=='RR') {
+          forest(freqpair()$MA$MA.Random, atransf=exp)
+          title("Forest plot of studies with overall estimate from random-effects model")
+        } else {
+          forest(freqpair()$MA$MA.Random)
+          title("Forest plot of studies with overall estimate from random-effects model")
+        }
+      }
+      dev.off()
+    }
+  )
+  
   output$SummaryTableF <- renderUI({          # Summary table
     freqpair()$Summary
   })
@@ -288,6 +307,20 @@ function(input, output, session) {
     bayespair()$Forest
   })
   
+  output$forestpairB_download <- downloadHandler(
+    filename = function() {
+      paste0("PairwiseAnalysis.", input$forestpairB_choice)
+    },
+    content = function(file) {
+      plot <- bayespair()$Forest
+      if (input$forestpairB_choice=='png') {
+        ggsave(file, plot, height=7, width=12, units="in", device="png")
+      } else {
+        ggsave(file, plot, height=7, width=12, units="in", device="pdf")
+      }
+    }
+  )
+  
   output$SummaryTableB <- renderUI({          # Summary table
     bayespair()$Summary
   })
@@ -300,5 +333,17 @@ function(input, output, session) {
     bayespair()$Trace
   })
   
-  
+  output$tracepair_download <- downloadHandler(
+    filename = function() {
+      paste0("PairwiseTrace.", input$tracepair_choice)
+    },
+    content = function(file) {
+      plot <- bayespair()$Trace
+      if (input$forestpairB_choice=='png') {
+        ggsave(file, plot, height=7, width=12, units="in", device="png")
+      } else {
+        ggsave(file, plot, height=7, width=12, units="in", device="pdf")
+      }
+    }
+  )
 }
