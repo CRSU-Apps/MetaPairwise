@@ -23,61 +23,20 @@ library(purrr)
 function(input, output, session) {
   
   
-  ### Load and present Data ###
-  #-----------------------#
-  
-  data <- reactive({                     # Read in user or default data
-    file <- input$data
-    if (is.null(file)) {
-      if (input$ChooseExample=='continuousEx') {
-        data <- read.csv("./AntiVEGF_Continuous_Pairwise.csv")
-      } else {
-        data <- read.csv("./AntiVEGF_Binary_Pairwise.csv")
-      }
-    } else {
-      data <- read.table(file = file$datapath, sep =",", header=TRUE, stringsAsFactors = FALSE, quote="\"")
-    }
-    levels <- levels(as_vector(lapply(data[grep("^T", names(data), value=TRUE)], factor)))  # extract treatment names/levels
-    return(list(data=data, levels=levels))
-  })
+  data <- dataPageServer("Data")
 
-  pairwise_ref <- function(trt_ctrl) {   # pairwise options
-    if (trt_ctrl=='trt') {
-      ref <- reactive({
-        file <- input$data
-        if (is.null(file)) {
-          return("BEVA")
-        } else {
-          return(data()$levels[1])
-        }
-      })
-    } else {
-      ref <- reactive({
-        file <- input$data
-        if (is.null(file)) {
-          return("RANI")
-        } else {
-          return(data()$levels[2])
-        }
-      })
-    }
-    return(ref())
-  }
   
-  #  observe({                              # populating reference treatment options
-  #    updateSelectInput(session = session, inputId = "Reference", choices = data()$levels, selected = reference())
-  #  })
-  observe({
-    updateSelectInput(session=session, inputId = "Pair_Trt", choices = data()$levels, selected = pairwise_ref(trt_ctrl='trt'))
-  })
-  observe({
-    updateSelectInput(session=session, inputId = "Pair_Ctrl", choices = data()$levels, selected = pairwise_ref(trt_ctrl='ctrl'))
-  })
+  optionsReactives <- optionsPanelServer("optionsPanel",data)
   
-  output$data <- renderTable({           # Create a table which displays the raw data just uploaded by the user
-    data()$data
-  })
-  
+  Pair_ctrl=optionsReactives$Pair_ctrl
+  Pair_trt=optionsReactives$Pair_trt
+  FixRand=optionsReactives$FixRand
+  OutcomeCont=optionsReactives$OutcomeCont
+  OutcomeBina=optionsReactives$OutcomeBina
+  prior=optionsReactives$prior
+  chains=optionsReactives$chains
+  iter=optionsReactives$iter
+  burn=optionsReactives$burn
   
   ContBin <- reactive({           # automatically detect if continuous or binary
     if (max(grepl("^Mean", names(data()$data)))==TRUE) {
@@ -93,9 +52,9 @@ function(input, output, session) {
   
   outcome <- reactive({                  # different outcome variables if continuous or binary
     if (ContBin()=='continuous') {
-      input$OutcomeCont
+      OutcomeCont()
     } else {
-      input$OutcomeBina
+      OutcomeBina()
     }
   })
   
@@ -106,13 +65,13 @@ function(input, output, session) {
   #-----------------------------------#
   
   FreqSummaryText <- eventReactive( input$FreqRun, {
-    paste("Results for ", strong(input$FixRand), "-effects ", strong("Pairwise"), " meta-analysis of ", strong(outcome()), "s using ", strong("frequentist"), " methodology,
-    with reference treatment ", strong(input$Pair_Ctrl), ".", sep="")
+    paste("Results for ", strong(FixRand()), "-effects ", strong("Pairwise"), " meta-analysis of ", strong(outcome()), "s using ", strong("frequentist"), " methodology,
+    with reference treatment ", strong(Pair_ctrl()), ".", sep="")
   })
   output$SynthesisSummaryFreq <- renderText({FreqSummaryText()})
   BayesSummaryText <- eventReactive( input$BayesRun, {
-    paste("Results for ", strong(input$FixRand), "-effects ", strong("Pairwise"), " meta-analysis of ", strong(outcome()), "s using ", strong("Bayesian"), " methodology, with vague prior ", strong(input$prior), " and
-    reference treatment ", strong(input$Pair_Ctrl), ".", sep="")
+    paste("Results for ", strong(FixRand()), "-effects ", strong("Pairwise"), " meta-analysis of ", strong(outcome()), "s using ", strong("Bayesian"), " methodology, with vague prior ", strong(prior()), " and
+    reference treatment ", strong(Pair_ctrl()), ".", sep="")
   })
   output$SynthesisSummaryBayes <- renderText({BayesSummaryText()})
   
@@ -125,7 +84,7 @@ function(input, output, session) {
   #-----------------------------#
   
   WideData <- reactive({               # convert long format to wide if need be (and ensure trt and ctrl are the right way round)
-    SwapTrt(CONBI=ContBin(), data=Long2Wide(data=data()$data), trt=input$Pair_Trt)
+    SwapTrt(CONBI=ContBin(), data=Long2Wide(data=data()$data), trt=Pair_trt())
   })
   
   observeEvent( input$FreqRun, {      # reopen panel when a user re-runs analysis
@@ -158,7 +117,7 @@ function(input, output, session) {
   freqpair <- eventReactive( input$FreqRun, {         # run frequentist pairwise MA and obtain plots etc.
     information <- list()
     information$MA <- FreqPair(data=WideData(), outcome=outcome(), model='both', CONBI=ContBin())
-    if (input$FixRand=='fixed') {                   # Forest plot
+    if (FixRand()=='fixed') {                   # Forest plot
       if (outcome()=='OR' | outcome()=='RR') {
         information$Forest <- {
           metafor::forest(information$MA$MA.Fixed, atransf=exp)
@@ -170,7 +129,7 @@ function(input, output, session) {
       }
       information$Summary <- PairwiseSummary_functionF(outcome(),information$MA$MA.Fixed)
       information$ModelFit <- PairwiseModelFit_functionF(information$MA$MA.Fixed)
-    } else if (input$FixRand=='random') {
+    } else if (FixRand()=='random') {
       if (outcome()=='OR' | outcome()=='RR') {
         information$Forest <- {
           metafor::forest(information$MA$MA.Random, atransf=exp)
@@ -197,7 +156,7 @@ function(input, output, session) {
     content = function(file) {
       if (input$forestpairF_choice=='pdf') {pdf(file=file)}
       else {png(file=file)}
-      if (input$FixRand=='fixed') { 
+      if (FixRand()=='fixed') { 
         if (outcome()=='OR' | outcome()=='RR') {
           forest(freqpair()$MA$MA.Fixed, atransf=exp)
           title("Forest plot of studies with overall estimate from fixed-effects model")
@@ -270,8 +229,8 @@ function(input, output, session) {
   bayespair <- eventReactive( input$BayesRun, {         # run Bayesian pairwise MA and obtain plots etc.
     #NoBayesian()
     information <- list()
-    information$MA <- BayesPair(CONBI=ContBin(), data=WideData(), trt=input$Pair_Trt, ctrl=input$Pair_Ctrl, outcome=outcome(), chains=input$chains, iter=input$iter, warmup=input$burn, model='both', prior=input$prior)
-    if (input$FixRand=='fixed') {
+    information$MA <- BayesPair(CONBI=ContBin(), data=WideData(), trt=Pair_trt(), ctrl=Pair_ctrl(), outcome=outcome(), chains=chains(), iter=iter(), warmup=burn(), model='both', prior=prior())
+    if (FixRand()=='fixed') {
       information$Forest <- {
         g <- BayesPairForest(information$MA$MAdata, outcome=outcome(), model='fixed')
         g + ggtitle("Forest plot of studies with overall estimate from fixed-effects model") +
@@ -284,7 +243,7 @@ function(input, output, session) {
         g + theme(legend.position='none', aspect.ratio = 0.45, axis.title=element_text(size=10,face="bold")) +
           labs(y="Pooled estimate", x="Iteration")
       }
-    } else if (input$FixRand=='random') {
+    } else if (FixRand()=='random') {
       information$Forest <- {
         g <- BayesPairForest(information$MA$MAdata, outcome=outcome(), model='random')
         g + ggtitle("Forest plot of studies with overall estimate from random-effects model") +
