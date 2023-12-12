@@ -3,27 +3,29 @@ freqAnalysisUI <- function(id) {
   div(fluidRow(align="center",
                         br(),
                         actionButton(ns("FreqRun"), "Run frequentist meta-analysis", class="btn-primary btn-lg")
-               ),
-               conditionalPanel(condition = "input.FreqRun!=0",
-                                ns=ns,
-                                fluidRow(p(htmlOutput(ns("SynthesisSummaryFreq"))
-                                ),
+      ),
+      conditionalPanel(condition = "input.FreqRun!=0",
+                       ns=ns,
+                       fluidRow(p(htmlOutput(ns("SynthesisSummaryFreq"))),
                                 p("To change the model options, please adjust synthesis options and re-run analysis."),
                                 fluidRow(align='center', withSpinner(htmlOutput(ns("SummaryTableF")))
                                 ),
-                                fluidRow(p(strong("Model fit statistics"))
-                                ),
-                                dropMenu(dropdownButton(size='xs',icon=icon('info')), align='left',
-                                         h6("Model fit statistics"),
-                                         p("Akaike information criterion (AIC) and Bayesian information criterion (BIC) measure 'model performance' whilst taking into account model complexity."),
-                                         htmlOutput(ns("ModelFitF"))),
-                                fluidRow(column(10, withSpinner(plotOutput(ns("ForestPlotPairF")))),
-                                         column(2,radioButtons(ns('forestpairF_choice'), "Download forest plot as:", c('pdf','png')),
-                                                downloadButton(ns('forestpairF_download'), "Download forest plot"),    #Forest plot
-                                         )
+                                fluidRow(align='center', div(style="display: inline-block;", p(strong("Model fit statistics"))),
+                                                         div(style="display: inline-block;", dropMenu(dropdownButton(size='xs',icon=icon('info')), align='left',
+                                                                                                      h6("Model fit statistics"),
+                                                                                                      p("Akaike information criterion (AIC) and Bayesian information criterion (BIC) measure 'model performance' whilst taking into account model complexity."),
+                                                                                                      p("The smaller the AIC or BIC, the 'better' the model. Values are best interpreted between models rather than alone.")
+                                                                                              )
+                                                             )
                                 )
-               )
-  )
+                                ),
+                        htmlOutput(ns("ModelFitF"), align='center'),
+                        fluidRow(column(10, withSpinner(plotOutput(ns("ForestPlotPairF")))),
+                                 column(2, radioButtons(ns('forestpairF_choice'), "Download forest plot as:", c('pdf','png')),
+                                           downloadButton(ns('forestpairF_download'), "Download forest plot"),    #Forest plot
+                                 )
+                        )
+      )
   )
 }
 
