@@ -2,22 +2,6 @@
 #-------------------#
 
 #----------------#
-# load libraries #
-#----------------#
-library(tidyverse)
-library(metafor)
-library(ggplot2)
-library(tidyr)
-library(tidybayes)
-library(dplyr)
-library(glue)
-library(forcats)
-library(rstan)
-library(MetaStan)
-library(purrr)
-
-
-#----------------#
 # Server Content #
 #----------------#
 function(input, output, session) {

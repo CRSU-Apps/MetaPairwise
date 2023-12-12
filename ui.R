@@ -1,22 +1,6 @@
 # MetaImpact UI #
 #---------------#
 
-# load libraries #
-#----------------#
-library(shiny)
-library(shinyjs)
-library(shinythemes)
-library(shinyBS)
-library(shinyWidgets)
-library(shinycssloaders)
-library(rintrojs)
-library(shinydashboard)
-library(markdown)
-
-
-# load user-written functions #
-#-----------------------------#
-
 
 
 # UI Content #
@@ -25,6 +9,9 @@ shinyUI(
   fluidPage(
   
   includeCSS("www/app.css"),
+  
+  rintrojs::introjsUI(),
+  shinyjs::useShinyjs(),
   
   navbarPage(id="MetaPairwise",
              title="MetaPairwise",

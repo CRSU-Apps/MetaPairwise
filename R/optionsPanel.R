@@ -61,16 +61,29 @@ optionsPanelServer <- function(id, data) {
       # Interactive help boxes #
       
       steps <- reactive(data.frame(
-        element = paste0("#", session$ns(c("#prior", "#chains", "#iter", "#burn"))),
+        element = paste0("#", session$ns(c("prior", "chains", "iter", "burn"))),
         intro = c("Choose which vague prior to use to initially model the between-study standard deviation (used for random-effects models)",
             "Choose the number of chains. A chain represents a run-through of the analysis, with each chain starting with different values to aid robustness. The results then incorporate all chains.",
             "The number of iterations to run through. A higher number of iterations is likely to lead to more robust results but does take longer.",
             "The number of iterations to 'burn' (i.e. not include in the results) at the start. In early iterations, estimated parameters are unlikely to have converged and thus are likely to give spurious results.")
       ))
       # Bayesian settings #
-      observeEvent(input$bayes_help,
-                   rintrojs::introjs(session, options = list(steps=steps(), "showBullets"="false", "showProgress"="true",
-                                                   "showStepNumbers"="false","nextLabel"="Next","prevLabel"="Prev","skipLabel"="Skip"))
+      observeEvent(
+        input$bayes_help,
+        {
+          rintrojs::introjs(
+            session,
+            options = list(
+              steps = steps(),
+              showBullets = FALSE,
+              showProgress = TRUE,
+              showStepNumbers = FALSE,
+              nextLabel = "Next",
+              prevLabel = "Prev",
+              skipLabel = "Skip"
+            )
+          )
+        }
       )
       
       return(list(Pair_ctrl=reactive({ input$Pair_Ctrl }),
