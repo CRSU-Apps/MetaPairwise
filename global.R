@@ -1,0 +1,23 @@
+
+# load libraries
+
+library(dplyr)
+library(forcats)
+library(ggplot2)
+library(glue)
+library(markdown)
+library(metafor)
+library(MetaStan)
+library(purrr)
+library(rintrojs)
+library(rstan)
+library(shiny)
+library(shinyBS)
+library(shinycssloaders)
+library(shinydashboard)
+library(shinyjs)
+library(shinythemes)
+library(shinyWidgets)
+library(tidybayes)
+library(tidyr)
+library(tidyverse)
