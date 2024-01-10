@@ -24,7 +24,8 @@ freqAnalysisUI <- function(id) {
                                  column(2, radioButtons(ns('forestpairF_choice'), "Download forest plot as:", c('pdf','png')),
                                            downloadButton(ns('forestpairF_download'), "Download forest plot"),    #Forest plot
                                  )
-                        )
+                        ),
+                       fluidRow(align='center',downloadButton(ns("FreqReport"), "Generate Analysis Report")),
       )
   )
 }
@@ -151,6 +152,17 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         freqpair()$ModelFit
       })
       
+      output$FreqReport <- downloadHandler(
+        filename = "Analysis Report.html",
+        content = function(file) {
+          if (FixRand()=='fixed') {
+             file.copy(reporter(freqpair()$MA$MA.Fixed, open=FALSE, dir="~"), file)
+          }
+          else {
+             file.copy(reporter(freqpair()$MA$MA.Random, open=FALSE, dir="~"), file)
+          }
+        }
+      )
       
     }
   )
