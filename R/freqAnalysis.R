@@ -109,7 +109,13 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
             }
             else {
               information$Forest <- {
-                metafor::forest(information$MA$MA.Fixed, ilab=cbind(Mean.1,SD.1,Mean.2,SD.2, round(weights(information$MA$MA.Fixed),2)))
+                forestTemp <- metafor::forest(information$MA$MA.Fixed, ilab = cbind(Mean.1,SD.1,Mean.2,SD.2, round(weights(information$MA$MA.Fixed),2)))
+                forestTemp
+                text(x=forestTemp$ilab.xpos, y=information$MA$MA.Fixed$k+2, labels = c("Mean", "SD", "Mean", "SD","Weights(%)"), font=2)
+                text(x=c((forestTemp$ilab.xpos[1]+forestTemp$ilab.xpos[2])/2 , (forestTemp$ilab.xpos[3]+forestTemp$ilab.xpos[4])/2),
+                     y=information$MA$MA.Fixed$k+3, 
+                     c(WideData()$T.1[1],WideData()$T.2[1])
+                )
                 title("Forest plot of studies with overall estimate from fixed-effects model")}
             }
           }
@@ -142,8 +148,14 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
                 title("Forest plot of studies with overall estimate from random-effects model")}
             } else {
               information$Forest <- {
-                metafor::forest(information$MA$MA.Random, ilab=cbind(Mean.1,SD.1,Mean.2,SD.2, round(weights(information$MA$MA.Random),2)))
-                title("Forest plot of studies with overall estimate from random-effects model")}
+                forestTemp <- metafor::forest(information$MA$MA.Random, ilab = cbind(Mean.1,SD.1,Mean.2,SD.2, round(weights(information$MA$MA.Random),2)))
+                forestTemp
+                text(x=forestTemp$ilab.xpos, y=information$MA$MA.Random$k+2, labels = c("Mean", "SD", "Mean", "SD","Weights(%)"), font=2)
+                text(x=c((forestTemp$ilab.xpos[1]+forestTemp$ilab.xpos[2])/2 , (forestTemp$ilab.xpos[3]+forestTemp$ilab.xpos[4])/2),
+                     y=information$MA$MA.Random$k+3, 
+                     c(WideData()$T.1[1],WideData()$T.2[1])
+                )
+                title("Forest plot of studies with overall estimate from fixed-effects model")}
             }
           }
             
