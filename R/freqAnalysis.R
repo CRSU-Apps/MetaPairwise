@@ -161,9 +161,9 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           withProgress(message = 'Generating file...', value = 0.5, {
           
           if (FixRand()=='fixed') {
-            file.copy(reporter(freqpair()$MA$MA.Fixed, open = FALSE, dir = "~"), file)
+            file.copy(reporter(freqpair()$MA$MA.Fixed, filename="report", open = FALSE), file)
           } else {
-            file.copy(reporter(freqpair()$MA$MA.Random, open = FALSE, dir = "~"), file)
+            file.copy(reporter(freqpair()$MA$MA.Random, filename="report", open = FALSE), file)
           }
             
             setProgress(message = 'File generated', value = 1)
