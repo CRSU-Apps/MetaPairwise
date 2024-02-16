@@ -1,4 +1,4 @@
-# MetaImpact Server #
+# MetaPairwise Server #
 #-------------------#
 
 #----------------#
@@ -6,6 +6,7 @@
 #----------------#
 function(input, output, session) {
   
+  frontPageServer(id = "Front")
   
   data <- dataPageServer("Data")
 

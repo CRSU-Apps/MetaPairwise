@@ -1,4 +1,4 @@
-# MetaImpact UI #
+# MetaPairwise UI #
 #---------------#
 
 
@@ -16,6 +16,11 @@ shinyUI(
   navbarPage(id="MetaPairwise",
              title="MetaPairwise",
              theme = shinytheme("readable"),
+             
+             # Front Page #
+             #------------#
+             
+             tabPanel("Home", frontPageUI(id="Front")),
              
             
              # Data Tab #
