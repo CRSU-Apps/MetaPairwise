@@ -40,7 +40,10 @@ dataPageUI <- function(id) {
     column(
       width = 4,
       h4("View Data"),
-      uiOutput(outputId = ns("data"))
+      div(
+        style = 'overflow-x: scroll',
+        uiOutput(outputId = ns("data"))
+      )
     ),
    
     column(
