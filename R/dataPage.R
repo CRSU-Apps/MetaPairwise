@@ -18,7 +18,6 @@ dataPageUI <- function(id) {
         buttonLabel = "Select",
         accept = c(".csv", ".xlsx")
       ),
-      br(),
       p("If you wish to explore the app without using your own data, you are welcome to choose one of the example datasets below."),
       p(
         "Example datasets are based on (network) meta-analyses reviewing the effect anti-vasuclar endothelial growth factor has on diabetic macular oedema. Visual acuity (VA) outcomes were reported and chosen for these examples. The continuous outcome example is extracted from a meta-analysis by Virgili et al which can be found ",
@@ -47,7 +46,7 @@ dataPageUI <- function(id) {
     column(
       width = 4,
       h4("Format Requirements"),
-          
+      
       tabsetPanel(
         id = 'format_instructions',
         
@@ -69,7 +68,9 @@ dataPageUI <- function(id) {
 #'
 #' @param id ID of the module.
 #'
-#' @return Reactive containing loaded data frame.
+#' @return Reactive containing list of:
+#' - data = loaded data frame.
+#' - levels = factors of the data
 dataPageServer <- function(id) {
   moduleServer(
     id,
@@ -83,12 +84,12 @@ dataPageServer <- function(id) {
         file <- input$data
         if (is.null(file)) {
           if (input$ChooseExample == 'continuousEx') {
-            data <- read.csv("AntiVEGF_Continuous_Pairwise.csv")
+            data <- rio::import("AntiVEGF_Continuous_Pairwise.csv")
           } else {
-            data <- read.csv("AntiVEGF_Binary_Pairwise.csv")
+            data <- rio::import("AntiVEGF_Binary_Pairwise.csv")
           }
         } else {
-          data <- read.table(file = file$datapath)
+          data <- rio::import(file = file$datapath)
         }
         # extract treatment names/levels
         levels <- levels(
