@@ -87,31 +87,44 @@ dataPageServer <- function(id) {
         file <- input$data
         if (is.null(file)) {
           if (input$ChooseExample == 'continuousEx') {
-            data <- rio::import("AntiVEGF_Continuous_Pairwise.csv")
+            data <- rio::import("data/AntiVEGF_Continuous_Pairwise.csv")
           } else {
-            data <- rio::import("AntiVEGF_Binary_Pairwise.csv")
+            data <- rio::import("data/AntiVEGF_Binary_Pairwise.csv")
           }
         } else {
           data <- rio::import(file = file$datapath)
         }
-        # extract treatment names/levels
-        levels <- levels(
-          as_vector(
-            lapply(
-              data[grep(pattern = "^T", names(data), value = TRUE)],
-              factor
-            )
-          )
-        )
-        return(list(data = data, levels = levels))
+        
+        return(CleanData(data))
       })
       
       # Create a table which displays the raw data just uploaded by the user
       output$data <- renderTable({
-        data()$data
+        data()
       })
       
-      return(data)
+      # Extract treatment names/levels
+      data_levels <- reactive({
+        return(
+          levels(
+            as_vector(
+              lapply(
+                data()[grep(pattern = "^T", names(data()), value = TRUE)],
+                factor
+              )
+            )
+          )
+        )
+      })
+      
+      return(
+        reactive({
+          list(
+            data = WrangleUploadData(data()),
+            levels = data_levels()
+          )
+        })
+      )
     }
   )
 }
