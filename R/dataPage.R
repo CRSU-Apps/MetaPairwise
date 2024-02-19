@@ -18,6 +18,7 @@ dataPageUI <- function(id) {
         buttonLabel = "Select",
         accept = c(".csv", ".xlsx")
       ),
+      checkboxInput(inputId = ns("sort_data"), label = "Sort studies alphabetically"),
       p("If you wish to explore the app without using your own data, you are welcome to choose one of the example datasets below."),
       p(
         "Example datasets are based on (network) meta-analyses reviewing the effect anti-vasuclar endothelial growth factor has on diabetic macular oedema. Visual acuity (VA) outcomes were reported and chosen for these examples. The continuous outcome example is extracted from a meta-analysis by Virgili et al which can be found ",
@@ -95,7 +96,12 @@ dataPageServer <- function(id) {
           data <- rio::import(file = file$datapath)
         }
         
-        return(CleanData(data))
+        cleaned_data <- CleanData(data)
+        if (input$sort_data) {
+          cleaned_data <- cleaned_data[order(cleaned_data$Study), ]
+        }
+        
+        return(cleaned_data)
       })
       
       # Create a table which displays the raw data just uploaded by the user
