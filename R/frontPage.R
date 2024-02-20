@@ -1,8 +1,12 @@
+#' Module UI for the home page.
+#' 
+#' @param id ID of the module
+#' @return Div for the home page
 frontPageUI <- function(id) {
-  ns=NS(id)
+  ns <- NS(id)
   div(
     h2("MetaPairwise V1.0.0",
-       tags$sup("Beta", style="color:#6CC0ED"), 
+       tags$sup("Beta", style = "color:#6CC0ED"), 
        align= "left"),
     
     br(),
@@ -22,7 +26,7 @@ frontPageUI <- function(id) {
              
              h4("Extra"),
              p("The code for MetaPairwise is open-source and available on the ",
-               tags$a(href="https://github.com/CRSU-Apps/MetaPairwise", "CRSU GitHub Page.")),
+               tags$a(href="https://github.com/CRSU-Apps/MetaPairwise", "CRSU GitHub Page."), target = "_blank"),
              p("For feedback/questions about this app please email the CRSU team at apps@crsu.org.uk."),
              p(
                "App powered by R and Shiny. All frequentist statistical calculations are performed using R package metafor (Wolfgang Viechtbauer 2010).",
@@ -48,7 +52,7 @@ frontPageUI <- function(id) {
                  tags$p("MetaPairwise is part of the Complex Reviews Synthesis Unit (CRSU) suite of evidence synthesis apps.
         The development of these apps are currently funded (majority) and overseen by the Evidence Synthesis Group @ CRSU (NIHR153934).
         Further details of other funders and support, current and past, can be found ",
-                        tags$a(href="https://github.com/CRSU-Apps/.github/blob/main/DetailedFundingStatement.pdf", "on our GitHub page"),
+                        tags$a(href="https://github.com/CRSU-Apps/.github/wiki/Detailed-Funding-Statement", "on our GitHub page"),
                         ". The views expressed are those of the author(s) and not necessarily those of the NIHR or the Department of Health and Social Care."),
                  tags$p(
                    "More information about the UK NIHR Complex Reviews Synthesis Unit (CRSU) can be found ",
@@ -60,6 +64,9 @@ frontPageUI <- function(id) {
   )
 }
 
+#' Module server for the home page.
+#' 
+#' @param id ID of the module
 frontPageServer <- function(id) {
   moduleServer(id, function(input, output, session) {
     # Do nothing
