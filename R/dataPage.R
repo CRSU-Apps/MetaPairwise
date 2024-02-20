@@ -1,4 +1,11 @@
 
+# Functions to call based on selected sort criteria
+.data_page_sort_criteria <- list(
+  "File order" = function(df) NullSort(df),
+  "Study name" = function(df) SortByStudyName(df),
+  "Participant count" = function(df) SortByParticipantCount(df)
+)
+
 #' UI for the load data page.
 #'
 #' @param id ID of the module.
@@ -18,7 +25,12 @@ dataPageUI <- function(id) {
         buttonLabel = "Select",
         accept = c(".csv", ".xlsx")
       ),
-      checkboxInput(inputId = ns("sort_data"), label = "Sort studies alphabetically"),
+      selectInput(
+        inputId = ns("sort_criteria"),
+        label = "Sort studies by:",
+        choices = names(.data_page_sort_criteria),
+        selectize = FALSE
+      ),
       p("If you wish to explore the app without using your own data, you are welcome to choose one of the example datasets below."),
       p(
         "Example datasets are based on (network) meta-analyses reviewing the effect anti-vasuclar endothelial growth factor has on diabetic macular oedema. Visual acuity (VA) outcomes were reported and chosen for these examples. The continuous outcome example is extracted from a meta-analysis by Virgili et al which can be found ",
@@ -84,7 +96,7 @@ dataPageServer <- function(id) {
       ContinuousInstructionsPanelServer(id = "continuous_instructions")
       
       # Read in user or default data
-      data <- reactive({
+      loaded_data <- reactive({
         file <- input$data
         if (is.null(file)) {
           if (input$ChooseExample == 'continuousEx') {
@@ -96,17 +108,25 @@ dataPageServer <- function(id) {
           data <- rio::import(file = file$datapath)
         }
         
-        cleaned_data <- CleanData(data)
-        if (input$sort_data) {
-          cleaned_data <- cleaned_data[order(cleaned_data$Study), ]
-        }
+        return(data)
+      })
+      
+      # Clean and sort data
+      cleaned_data <- reactive({
+        cleaned_data <- CleanData(loaded_data())
+        # Sort data according to selected criteria
+        cleaned_data <- .data_page_sort_criteria[[input$sort_criteria]](cleaned_data)
         
         return(cleaned_data)
       })
       
+      wrangled_data <- reactive({
+        WrangleUploadData(cleaned_data())
+      })
+      
       # Create a table which displays the raw data just uploaded by the user
       output$data <- renderTable({
-        data()
+        cleaned_data()
       })
       
       # Extract treatment names/levels
@@ -115,7 +135,7 @@ dataPageServer <- function(id) {
           levels(
             as_vector(
               lapply(
-                data()[grep(pattern = "^T", names(data()), value = TRUE)],
+                wrangled_data()[grep(pattern = "^T", names(wrangled_data()), value = TRUE)],
                 factor
               )
             )
@@ -126,7 +146,7 @@ dataPageServer <- function(id) {
       return(
         reactive({
           list(
-            data = WrangleUploadData(data()),
+            data = wrangled_data(),
             levels = data_levels()
           )
         })
