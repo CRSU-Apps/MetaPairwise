@@ -11,7 +11,7 @@ function(input, output, session) {
   data <- dataPageServer("Data")
 
   
-  optionsReactives <- optionsPanelServer("optionsPanel",data)
+  optionsReactives <- optionsPanelServer("optionsPanel", data)
   
   Pair_ctrl=optionsReactives$Pair_ctrl
   Pair_trt=optionsReactives$Pair_trt
@@ -24,19 +24,19 @@ function(input, output, session) {
   burn=optionsReactives$burn
   
   ContBin <- reactive({           # automatically detect if continuous or binary
-    if (max(grepl("^Mean", names(data()$data)))==TRUE) {
+    if (max(grepl("^Mean", names(data()$data))) == TRUE) {
       return('continuous')
-    } else if (max(grepl("^R", names(data()$data)))==TRUE) {
+    } else if (max(grepl("^R", names(data()$data))) == TRUE) {
       return ('binary')
     }
   })
   output$ContBin <- renderText({
     ContBin()
   })
-  outputOptions(output, "ContBin", suspendWhenHidden=FALSE) #needed for UI options, but doesn't need displaying itself
+  outputOptions(output, "ContBin", suspendWhenHidden = FALSE) #needed for UI options, but doesn't need displaying itself
   
   outcome <- reactive({                  # different outcome variables if continuous or binary
-    if (ContBin()=='continuous') {
+    if (ContBin() == 'continuous') {
       OutcomeCont()
     } else {
       OutcomeBina()
