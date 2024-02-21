@@ -11,7 +11,7 @@ dataPageUI <- function(id) {
       width = 4,
       # Insert own data or choose example data
       h4("Choose Data"),
-      p("Please upload your data as a .csv file, formatted as described on the right-hand side of this page. Treatment coding (i.e. numbering rather than labels) and specifying whether the outcome is continuous or binary is not necessary."),
+      p("Please upload your data as a .csv or .xlsx file, formatted as described on the right-hand side of this page. Treatment coding (i.e. numbering rather than labels) and specifying whether the outcome is continuous or binary is not necessary."),
       fileInput(
         inputId = ns("data"),
         label = NULL,
@@ -25,7 +25,6 @@ dataPageUI <- function(id) {
         "The binary outcome example is extracted from a meta-analysis by Pham et al which can be found ",
         a(href = "https://bmjopen.bmj.com/content/9/5/e022031", "here.")
       ),
-      p("Options to explore an example network meta-analysis will be available in the near future."),
       radioButtons(
         inputId = ns("ChooseExample"),
         label = "Example Datasets Available",

@@ -12,11 +12,6 @@ ContinuousInstructionsPanelUi <- function(id) {
     tags$ul(
       tags$li(
         "A column labelled ",
-        tags$strong("StudyID"),
-        " containing the study identifier, starting from 1, then 2, 3, 4... etc."
-      ),
-      tags$li(
-        "A column labelled ",
         tags$strong("Study"),
         " containing the name (e.g., author, year) of the study. The study name must be unique for each study."
       ),
