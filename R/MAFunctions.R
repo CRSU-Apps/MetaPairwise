@@ -72,28 +72,8 @@ FreqPair <- function(data, outcome, CONBI, model) { #inputs: data frame in wide 
   if (model=='random' | model=='both') {MA.Random <- rma(yi, vi, slab=Study, data=MAdata, method="PM", measure=outcome)} #random effects #
   list(MAdata=MAdata, MA.Random=MA.Random, MA.Fixed=MA.Fixed)
 } 
+
 ## DOESN'T WORK UNLESS MODEL=='BOTH'
-
-### Frequentist NMA ###
-
-FreqNMA <- function(data, outcome, CONBI, model, ref) { #inputs: data frame; outcome type; continuous or binary; fixed or random (or both); reference group
-  treat <- data[,grep(pattern="^T", colnames(data))]
-  n <- data[,grep(pattern="^N", colnames(data))]
-  if (CONBI=='continuous') { 
-    mean <- data[,grep(pattern="^Mean", colnames(data))]
-    sd <- data[,grep(pattern="^SD", colnames(data))]
-    d1 <- pairwise(treat=treat,n=n,mean=mean,sd=sd, data=data, studlab=Study, sm=outcome) #convert to contrast form
-  } else {
-    event <- data[,grep(pattern="^R", colnames(data))]
-    d1 <- pairwise(treat=treat,event=event,n=n, data=data, studlab=Study, sm=outcome)
-  }
-  net1 <- netmeta(TE, seTE, treat1, treat2, studlab, data=d1,
-                  sm=outcome, level=0.95, level.comb=0.95,
-                  comb.random=(model=='random' | model=='both'), comb.fixed=(model=='fixed' | model=='both'), reference.group=ref,
-                  all.treatments=NULL, seq=NULL, tau.preset=NULL,
-                  tol.multiarm=0.05, tol.multiarm.se=0.2, warn=TRUE)
-  list(MAObject=net1, MAData=d1)
-}
 
 ### Forest Plot ###
 

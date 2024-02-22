@@ -83,30 +83,82 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       
       freqpair <- eventReactive( input$FreqRun, {         # run frequentist pairwise MA and obtain plots etc.
         information <- list()
-        information$MA <- FreqPair(data=WideData(), outcome=outcome(), model='both', CONBI=ContBin())
+        information$MA <- FreqPair(data = WideData(), outcome = outcome(), model = 'both', CONBI = ContBin())
         if (FixRand()=='fixed') {                   # Forest plot
           if (outcome()=='OR' | outcome()=='RR') {
             information$Forest <- {
-              metafor::forest(information$MA$MA.Fixed, atransf=exp)
-              title("Forest plot of studies with overall estimate from fixed-effects model")}
-          } else {
-            information$Forest <- {
-              metafor::forest(information$MA$MA.Fixed)
+              forestTemp <- metafor::forest(information$MA$MA.Fixed, atransf = exp, ilab = cbind(R.1, N.1-R.1, R.2, N.2-R.2, round(weights(information$MA$MA.Fixed), 2)))
+              forestTemp
+              text(x = forestTemp$ilab.xpos, y = information$MA$MA.Fixed$k + 2, labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights(%)"), font = 2)
+              text(x = c((forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2]) / 2 , (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2),
+                   y = information$MA$MA.Fixed$k + 3, 
+                   c(WideData()$T.1[1], WideData()$T.2[1])
+              )
               title("Forest plot of studies with overall estimate from fixed-effects model")}
           }
+          else if (outcome()=='RD') {
+            information$Forest <- {
+              forestTemp <- metafor::forest(information$MA$MA.Fixed, ilab = cbind(R.1, N.1-R.1, R.2, N.2-R.2, round(weights(information$MA$MA.Fixed), 2)))
+              forestTemp
+              text(x = forestTemp$ilab.xpos, y=information$MA$MA.Fixed$k + 2, labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights(%)"), font=2)
+              text(x = c((forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2]) / 2 , (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2),
+                   y = information$MA$MA.Fixed$k + 3, 
+                   c(WideData()$T.1[1], WideData()$T.2[1])
+              )
+              title("Forest plot of studies with overall estimate from fixed-effects model")}
+          }
+          else {
+            information$Forest <- {
+              forestTemp <- metafor::forest(information$MA$MA.Fixed, ilab = cbind(Mean.1, SD.1, Mean.2, SD.2, round(weights(information$MA$MA.Fixed), 2)))
+              forestTemp
+              text(x = forestTemp$ilab.xpos, y = information$MA$MA.Fixed$k + 2, labels = c("Mean", "SD", "Mean", "SD","Weights(%)"), font = 2)
+              text(x = c((forestTemp$ilab.xpos[1]+forestTemp$ilab.xpos[2]) / 2 , (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2),
+                   y = information$MA$MA.Fixed$k + 3, 
+                   c(WideData()$T.1[1], WideData()$T.2[1])
+              )
+              title("Forest plot of studies with overall estimate from fixed-effects model")}
+          }
+
+          
           information$Summary <- PairwiseSummary_functionF(outcome(),information$MA$MA.Fixed)
           information$ModelFit <- PairwiseModelFit_functionF(information$MA$MA.Fixed)
-        } else if (FixRand()=='random') {
-          if (outcome()=='OR' | outcome()=='RR') {
+          
+        } else if (FixRand() == 'random') {
+          if (outcome() == 'OR' | outcome() == 'RR') {
             information$Forest <- {
-              metafor::forest(information$MA$MA.Random, atransf=exp)
+              forestTemp <- metafor::forest(information$MA$MA.Random, atransf=exp, ilab = cbind(R.1, N.1-R.1, R.2, N.2-R.2, round(weights(information$MA$MA.Random), 2)))
+              forestTemp
+              text(x = forestTemp$ilab.xpos, y = information$MA$MA.Random$k + 2, labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights(%)"), font = 2)
+              text(x = c((forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2]) / 2 , (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2),
+                   y = information$MA$MA.Random$k + 3, 
+                   c(WideData()$T.1[1], WideData()$T.2[1])
+              )
+              title("Forest plot of studies with overall estimate from random-effects model")}
+          }
+          else if (outcome() == 'RD') {
+            information$Forest <- {
+              forestTemp <- metafor::forest(information$MA$MA.Random, ilab=cbind(R.1, N.1-R.1, R.2, N.2-R.2, round(weights(information$MA$MA.Random), 2)))
+              forestTemp
+              text(x = forestTemp$ilab.xpos, y=information$MA$MA.Random$k + 2, labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights(%)"), font = 2)
+              text(x = c((forestTemp$ilab.xpos[1]+forestTemp$ilab.xpos[2]) / 2 , (forestTemp$ilab.xpos[3]+forestTemp$ilab.xpos[4]) / 2),
+                   y = information$MA$MA.Random$k + 3, 
+                   c(WideData()$T.1[1], WideData()$T.2[1])
+              )
               title("Forest plot of studies with overall estimate from random-effects model")}
           } else {
             information$Forest <- {
-              metafor::forest(information$MA$MA.Random)
-              title("Forest plot of studies with overall estimate from random-effects model")}
+              forestTemp <- metafor::forest(information$MA$MA.Random, ilab = cbind(Mean.1, SD.1, Mean.2, SD.2, round(weights(information$MA$MA.Random), 2)))
+              forestTemp
+              text(x=forestTemp$ilab.xpos, y = information$MA$MA.Random$k + 2, labels = c("Mean", "SD", "Mean", "SD","Weights(%)"), font = 2)
+              text(x=c((forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2])/2 , (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2),
+                   y=information$MA$MA.Random$k + 3, 
+                   c(WideData()$T.1[1], WideData()$T.2[1])
+              )
+              title("Forest plot of studies with overall estimate from fixed-effects model")}
           }
-          information$Summary <- PairwiseSummary_functionF(outcome(),information$MA$MA.Random)
+            
+            
+          information$Summary <- PairwiseSummary_functionF(outcome(), information$MA$MA.Random)
           information$ModelFit <- PairwiseModelFit_functionF(information$MA$MA.Random)
         }
         information
@@ -116,28 +168,83 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         freqpair()$Forest
       })
       
+      
+      ## Forest Plot Download ##
+      
       output$forestpairF_download <- downloadHandler(
         filename = function() {
           paste0("PairwiseAnalysis.", input$forestpairF_choice)
         },
         content = function(file) {
-          if (input$forestpairF_choice=='pdf') {pdf(file=file)}
-          else {png(file=file)}
-          if (FixRand()=='fixed') { 
-            if (outcome()=='OR' | outcome()=='RR') {
-              forest(freqpair()$MA$MA.Fixed, atransf=exp)
-              title("Forest plot of studies with overall estimate from fixed-effects model")
-            } else {
-              forest(freqpair()$MA$MA.Fixed)
-              title("Forest plot of studies with overall estimate from fixed-effects model")
+          information <- list()
+          information$MA <- freqpair()$MA
+          if (input$forestpairF_choice == 'pdf') {pdf(file=file, width = 15)}
+          else {png(file = file, width = 1000)}
+          if (FixRand() == 'fixed') { 
+            if (outcome() == 'OR' | outcome() == 'RR') {
+              information$Forest <- {
+                forestTemp <- metafor::forest(information$MA$MA.Fixed, atransf = exp, ilab = cbind(R.1, N.1-R.1, R.2, N.2-R.2, round(weights(information$MA$MA.Fixed), 2)))
+                forestTemp
+                text(x = forestTemp$ilab.xpos, y = information$MA$MA.Fixed$k + 2, labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights(%)"), font = 2)
+                text(x = c((forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2]) / 2, (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2),
+                     y=information$MA$MA.Fixed$k + 3, 
+                     c(WideData()$T.1[1], WideData()$T.2[1])
+                )
+                title("Forest plot of studies with overall estimate from fixed-effects model")}
+            }           else if (outcome() == 'RD') {
+              information$Forest <- {
+                forestTemp <- metafor::forest(information$MA$MA.Fixed, ilab = cbind(R.1, N.1-R.1, R.2, N.2-R.2, round(weights(information$MA$MA.Fixed), 2)))
+                forestTemp
+                text(x = forestTemp$ilab.xpos, y = information$MA$MA.Fixed$k + 2, labels = c("Pos+", "Neg-", "Pos+", "Neg-", "Weights(%)"), font = 2)
+                text(x = c((forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2]) / 2, (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2),
+                     y = information$MA$MA.Fixed$k + 3, 
+                     c(WideData()$T.1[1], WideData()$T.2[1])
+                )
+                title("Forest plot of studies with overall estimate from fixed-effects model")}
+            }
+            else {
+              information$Forest <- {
+                forestTemp <- metafor::forest(information$MA$MA.Fixed, ilab = cbind(Mean.1, SD.1, Mean.2, SD.2, round(weights(information$MA$MA.Fixed), 2)))
+                forestTemp
+                text(x = forestTemp$ilab.xpos, y = information$MA$MA.Fixed$k + 2, labels = c("Mean", "SD", "Mean", "SD","Weights(%)"), font = 2)
+                text(x = c((forestTemp$ilab.xpos[1]+forestTemp$ilab.xpos[2]) / 2, (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2),
+                     y = information$MA$MA.Fixed$k + 3, 
+                     c(WideData()$T.1[1], WideData()$T.2[1])
+                )
+                title("Forest plot of studies with overall estimate from fixed-effects model")}
             }
           } else {
-            if (outcome()=='OR' | outcome()=='RR') {
-              forest(freqpair()$MA$MA.Random, atransf=exp)
-              title("Forest plot of studies with overall estimate from random-effects model")
+            if (outcome() == 'OR' | outcome() == 'RR') {
+              information$Forest <- {
+                forestTemp <- metafor::forest(information$MA$MA.Random, atransf = exp, ilab=cbind(R.1,N.1-R.1,R.2,N.2-R.2, round(weights(information$MA$MA.Random), 2)))
+                forestTemp
+                text(x = forestTemp$ilab.xpos, y = information$MA$MA.Random$k + 2, labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights(%)"), font = 2)
+                text(x = c((forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2]) / 2, (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2),
+                     y = information$MA$MA.Random$k + 3, 
+                     c(WideData()$T.1[1], WideData()$T.2[1])
+                )
+                title("Forest plot of studies with overall estimate from random-effects model")}
+            }
+            else if (outcome()=='RD') {
+              information$Forest <- {
+                forestTemp <- metafor::forest(information$MA$MA.Random, ilab = cbind(R.1,N.1-R.1,R.2,N.2-R.2, round(weights(information$MA$MA.Random), 2)))
+                forestTemp
+                text(x=forestTemp$ilab.xpos, y = information$MA$MA.Random$k+2, labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights(%)"), font = 2)
+                text(x=c((forestTemp$ilab.xpos[1]+forestTemp$ilab.xpos[2]) / 2 , (forestTemp$ilab.xpos[3]+forestTemp$ilab.xpos[4]) / 2),
+                     y=information$MA$MA.Random$k+3, 
+                     c(WideData()$T.1[1], WideData()$T.2[1])
+                )
+                title("Forest plot of studies with overall estimate from random-effects model")}
             } else {
-              forest(freqpair()$MA$MA.Random)
-              title("Forest plot of studies with overall estimate from random-effects model")
+              information$Forest <- {
+                forestTemp <- metafor::forest(information$MA$MA.Random, ilab = cbind(Mean.1,SD.1,Mean.2,SD.2, round(weights(information$MA$MA.Random),2)))
+                forestTemp
+                text(x = forestTemp$ilab.xpos, y = information$MA$MA.Random$k + 2, labels = c("Mean", "SD", "Mean", "SD","Weights(%)"), font = 2)
+                text(x = c((forestTemp$ilab.xpos[1]+forestTemp$ilab.xpos[2]) / 2 , (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2),
+                     y = information$MA$MA.Random$k + 3, 
+                     c(WideData()$T.1[1], WideData()$T.2[1])
+                )
+                title("Forest plot of studies with overall estimate from fixed-effects model")}
             }
           }
           dev.off()
