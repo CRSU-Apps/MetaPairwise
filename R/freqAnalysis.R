@@ -82,7 +82,7 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       
       freqpair <- eventReactive( input$FreqRun, {         # run frequentist pairwise MA and obtain plots etc.
         information <- list()
-        information$MA <- FreqPair(data=WideData(), outcome=outcome(), model='both', CONBI=ContBin())
+        information$MA <- FreqPair(data = WideData(), outcome = outcome(), model = 'both', CONBI = ContBin())
         if (FixRand()=='fixed') {                   # Forest plot
           if (outcome()=='OR' | outcome()=='RR') {
             information$Forest <- {
@@ -176,7 +176,7 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         },
         content = function(file) {
           information <- list()
-          information$MA <- FreqPair(data = WideData(), outcome = outcome(), model = 'both', CONBI = ContBin())
+          information$MA <- freqpair()$MA
           if (input$forestpairF_choice == 'pdf') {pdf(file=file, width = 15)}
           else {png(file = file, width = 1000)}
           if (FixRand() == 'fixed') { 
