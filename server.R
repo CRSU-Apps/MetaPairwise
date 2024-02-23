@@ -13,15 +13,15 @@ function(input, output, session) {
   
   optionsReactives <- optionsPanelServer("optionsPanel", data)
   
-  Pair_ctrl=optionsReactives$Pair_ctrl
-  Pair_trt=optionsReactives$Pair_trt
-  FixRand=optionsReactives$FixRand
-  OutcomeCont=optionsReactives$OutcomeCont
-  OutcomeBina=optionsReactives$OutcomeBina
-  prior=optionsReactives$prior
-  chains=optionsReactives$chains
-  iter=optionsReactives$iter
-  burn=optionsReactives$burn
+  Pair_ctrl <- optionsReactives$Pair_ctrl
+  Pair_trt <- optionsReactives$Pair_trt
+  FixRand <- optionsReactives$FixRand
+  OutcomeCont <- optionsReactives$OutcomeCont
+  OutcomeBina <- optionsReactives$OutcomeBina
+  prior <- optionsReactives$prior
+  chains <- optionsReactives$chains
+  iter <- optionsReactives$iter
+  burn <- optionsReactives$burn
   
   ContBin <- reactive({           # automatically detect if continuous or binary
     if (max(grepl("^Mean", names(data()$data))) == TRUE) {
@@ -43,9 +43,9 @@ function(input, output, session) {
     }
   })
   
-  freqAnalysisServer(id="freqAnalysis", data, FixRand, outcome, ContBin, Pair_trt, Pair_ctrl)
+  freqAnalysisServer(id = "freqAnalysis", data, FixRand, outcome, ContBin, Pair_trt, Pair_ctrl)
   
-  bayesAnalysisServer(id="bayesAnalysis", data,  FixRand, outcome, ContBin, Pair_trt, Pair_ctrl, prior, iter, chains, burn)
+  bayesAnalysisServer(id = "bayesAnalysis", data,  FixRand, outcome, ContBin, Pair_trt, Pair_ctrl, prior, iter, chains, burn)
   
   
 }
