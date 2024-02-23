@@ -77,7 +77,6 @@ dataPageServer <- function(id) {
   moduleServer(
     id,
     function(input, output, session) {
-      
       BinaryInstructionsPanelServer(id = "binary_instructions")
       ContinuousInstructionsPanelServer(id = "continuous_instructions")
       
@@ -86,9 +85,9 @@ dataPageServer <- function(id) {
         file <- input$data
         if (is.null(file)) {
           if (input$ChooseExample == 'continuousEx') {
-            data <- rio::import("data/AntiVEGF_Continuous_Pairwise.csv")
+            data <- rio::import("data/AntiVEGF_Continuous_Pairwise_Long.csv")
           } else {
-            data <- rio::import("data/AntiVEGF_Binary_Pairwise.csv")
+            data <- rio::import("data/AntiVEGF_Binary_Pairwise_Long.csv")
           }
         } else {
           data <- rio::import(file = file$datapath)
