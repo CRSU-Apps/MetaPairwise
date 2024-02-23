@@ -26,15 +26,15 @@ frontPageUI <- function(id) {
              
              h4("Extra"),
              p("The code for MetaPairwise is open-source and available on the ",
-               tags$a(href="https://github.com/CRSU-Apps/MetaPairwise", "CRSU GitHub Page."), target = "_blank"),
+               tags$a(href = "https://github.com/CRSU-Apps/MetaPairwise", "CRSU GitHub Page."), target = "_blank"),
              p("For feedback/questions about this app please email the CRSU team at apps@crsu.org.uk."),
              p(
                "App powered by R and Shiny. All frequentist statistical calculations are performed using R package metafor (Wolfgang Viechtbauer 2010).",
-               tags$a(href="https://cran.r-project.org/web/packages/metafor/index.html", "metafor: Meta-Analysis Package for R. R package version 4.4-0.",target="_blank"),
+               tags$a(href = "https://cran.r-project.org/web/packages/metafor/index.html", "metafor: Meta-Analysis Package for R. R package version 4.4-0.",target = "_blank"),
                "All Bayesian statistical calculations are performed using R package RStan (Stan Development Team 2016)",
-               tags$a(href="https://cran.r-project.org/web/packages/rstan/index.html", "rstan: R Interface to Stan. R package version 2.32.3.",target="_blank"),
+               tags$a(href = "https://cran.r-project.org/web/packages/rstan/index.html", "rstan: R Interface to Stan. R package version 2.32.3.",target = "_blank"),
                "and R package MetaStan (Burak Kuersad Guenhan, Christian Roever 2022)",
-               tags$a(href="https://cran.r-project.org/web/packages/MetaStan/index.html", "MetaStan: Bayesian Meta-Analysis via 'Stan'. R package version 1.0.0.",target="_blank")
+               tags$a(href = "https://cran.r-project.org/web/packages/MetaStan/index.html", "MetaStan: Bayesian Meta-Analysis via 'Stan'. R package version 1.0.0.",target = "_blank")
              ),
              br(),
              p("THE SOFTWARE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
@@ -52,11 +52,12 @@ frontPageUI <- function(id) {
                  tags$p("MetaPairwise is part of the Complex Reviews Synthesis Unit (CRSU) suite of evidence synthesis apps.
         The development of these apps are currently funded (majority) and overseen by the Evidence Synthesis Group @ CRSU (NIHR153934).
         Further details of other funders and support, current and past, can be found ",
-                        tags$a(href="https://github.com/CRSU-Apps/.github/wiki/Detailed-Funding-Statement", "on our GitHub page"),
-                        ". The views expressed are those of the author(s) and not necessarily those of the NIHR or the Department of Health and Social Care."),
+                        tags$a(href = "https://github.com/CRSU-Apps/.github/wiki/Detailed-Funding-Statement", "on our GitHub page"),
+                        ". The views expressed are those of the author(s) and not necessarily those of the NIHR or the Department of Health and Social Care.",
+                        target = "_blank"),
                  tags$p(
                    "More information about the UK NIHR Complex Reviews Synthesis Unit (CRSU) can be found ",
-                   tags$a(href="https://www.gla.ac.uk/research/az/evidencesynthesis/apps-materials-guidence/", "on our website.", target="_blank"),
+                   tags$a(href = "https://www.gla.ac.uk/research/az/evidencesynthesis/apps-materials-guidence/", "on our website.", target = "_blank"),
                  )
                )
              )
