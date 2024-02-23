@@ -40,7 +40,7 @@ shinyUI(
                       
                       sidebarLayout(
                         
-                        sidebarPanel(optionsPanelUI(id = "optionsPanel"),width=3),
+                        sidebarPanel(optionsPanelUI(id = "optionsPanel"), width = 3),
                         
                          mainPanel(
 
