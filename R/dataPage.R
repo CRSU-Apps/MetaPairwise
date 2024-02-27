@@ -27,7 +27,11 @@ dataPageUI <- function(id) {
       ),
       selectInput(
         inputId = ns("sort_criteria"),
-        label = "Sort studies by:",
+        label = div(
+          title = "Sort the studies in the forest plots and other analysis outputs",
+          "Sort studies by:",
+          icon(name = "circle-question")
+        ),
         choices = names(.data_page_sort_criteria),
         selectize = FALSE
       ),
