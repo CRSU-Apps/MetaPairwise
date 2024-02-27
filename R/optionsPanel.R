@@ -2,31 +2,7 @@ optionsPanelUI <- function(id) {
   ns = NS(id)
   div(
     h4("Synthesis Options"),
-    fluidRow(
-      div(
-        style = "display: flex; justify-content: space-between; margin: 0 15px",
-        selectInput(
-          inputId = ns("Pair_Trt"),
-          label = "Select Treatment",
-          choices = NULL,
-          selectize = FALSE
-        ),
-        div(
-          style = "display: inline-block; align-self: center;",
-          actionButton(
-            inputId = ns("swap_treatments"),
-            label = NULL,
-            icon = icon(name = "arrow-right-arrow-left")
-          )
-        ),
-        selectInput(
-          inputId = ns("Pair_Ctrl"),
-          label = "Select Comparator",
-          choices = NULL,
-          selectize = FALSE
-        )
-      )
-    ),
+    treatment_selection_panel_ui(id = ns("treatment_selection")),
     radioButtons(
       inputId = ns("FixRand"),
       label = "Model selection:",
@@ -117,43 +93,7 @@ optionsPanelServer <- function(id, data) {
     id,
     function(input, output, session) {
       
-      # Update available treatments when the data changes
-      observe({
-        updateSelectInput(inputId = "Pair_Trt", choices = data()$levels, selected = data()$levels[1])
-      }) %>% bindEvent(data())
-      
-      # Update available comparators when treatment changes
-      observe({
-        items <- data()$levels
-        items <- items[items != input$Pair_Trt]
-        
-        selected <- input$Pair_Ctrl
-        if (is.null(selected) || !selected %in% items) {
-          selected <- items[1]
-        }
-        updateSelectInput(inputId = "Pair_Ctrl", choices = items, selected = selected)
-        
-        # Allow the comparator selection to be updated given the new choices.
-        ctrl_observer$resume()
-      }) %>% bindEvent(input$Pair_Trt)
-      
-      # Used to swap treatments
-      new_ctrl <- reactiveVal()
-      
-      # Swap treatments when button clicked
-      observe({
-        new_trt <- input$Pair_Ctrl
-        # Prevent the comparator selection from updating until after the choices have been updated.
-        ctrl_observer$suspend()
-        new_ctrl(input$Pair_Trt)
-        updateSelectInput(inputId = "Pair_Trt", selected = new_trt)
-      }) %>% bindEvent(input$swap_treatments)
-      
-      # Swap treatments when button clicked
-      ctrl_observer <- observe({
-        updateSelectInput(inputId = "Pair_Ctrl", selected = new_ctrl())
-        new_ctrl(NULL)
-      }) %>% bindEvent(new_ctrl(), ignoreNULL = TRUE)
+      treatment_reactives <- treatment_selection_panel_server(id = "treatment_selection", data = data)
       
       # Interactive help boxes #
       
@@ -183,19 +123,19 @@ optionsPanelServer <- function(id, data) {
         }
       )
       
-      return(list(Pair_ctrl=reactive({ input$Pair_Ctrl }),
-                  Pair_trt=reactive({ input$Pair_Trt }),
-                  FixRand=reactive({ input$FixRand }),
-                  OutcomeCont=reactive({ input$OutcomeCont }),
-                  OutcomeBina=reactive({ input$OutcomeBina }),
-                  prior=reactive({ input$prior }),
-                  chains=reactive({ input$chains }),
-                  iter=reactive({ input$iter }),
-                  burn=reactive({ input$burn})
-                  ))
-      
-      
-      
+      return(
+        list(
+          Pair_ctrl = treatment_reactives$reference,
+          Pair_trt = treatment_reactives$intervention,
+          FixRand = reactive({ input$FixRand }),
+          OutcomeCont = reactive({ input$OutcomeCont }),
+          OutcomeBina = reactive({ input$OutcomeBina }),
+          prior = reactive({ input$prior }),
+          chains = reactive({ input$chains }),
+          iter = reactive({ input$iter }),
+          burn = reactive({ input$burn})
+        )
+      )
     }
   )
 }
