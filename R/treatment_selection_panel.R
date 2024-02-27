@@ -3,8 +3,8 @@ treatment_selection_panel_ui <- function(id) {
   div(
     style = "display: flex; justify-content: space-between; margin: 0 15px",
     selectInput(
-      inputId = ns("intervention"),
-      label = "Select Intervention",
+      inputId = ns("reference"),
+      label = "Select Reference",
       choices = NULL,
       selectize = FALSE
     ),
@@ -17,8 +17,8 @@ treatment_selection_panel_ui <- function(id) {
       )
     ),
     selectInput(
-      inputId = ns("reference"),
-      label = "Select Reference",
+      inputId = ns("intervention"),
+      label = "Select Intervention",
       choices = NULL,
       selectize = FALSE
     )
@@ -30,43 +30,43 @@ treatment_selection_panel_server <- function(id, data) {
     id,
     function(input, output, session) {
       
-      # Update available treatments when the data changes
+      # Update available reference treatments when the data changes
       observe({
-        updateSelectInput(inputId = "intervention", choices = data()$levels, selected = data()$levels[1])
+        updateSelectInput(inputId = "reference", choices = data()$levels, selected = data()$levels[1])
       }) %>% bindEvent(data())
       
-      # Update available comparators when treatment changes
+      # Update available interventions when treatment changes
       observe({
         items <- data()$levels
-        items <- items[items != input$intervention]
+        items <- items[items != input$reference]
         
-        selected <- input$reference
+        selected <- input$intervention
         if (is.null(selected) || !selected %in% items) {
           selected <- items[1]
         }
-        updateSelectInput(inputId = "reference", choices = items, selected = selected)
+        updateSelectInput(inputId = "intervention", choices = items, selected = selected)
         
-        # Allow the comparator selection to be updated given the new choices.
-        reference_observer$resume()
-      }) %>% bindEvent(input$intervention)
+        # Allow the intervention selection to be updated given the new choices.
+        intervention_observer$resume()
+      }) %>% bindEvent(input$reference)
       
       # Used to swap treatments
-      new_reference <- reactiveVal()
+      new_intervention <- reactiveVal()
       
       # Swap treatments when button clicked
       observe({
-        new_intervention <- input$reference
+        new_reference <- input$intervention
         # Prevent the comparator selection from updating until after the choices have been updated.
-        reference_observer$suspend()
-        new_reference(input$intervention)
-        updateSelectInput(inputId = "intervention", selected = new_intervention)
+        intervention_observer$suspend()
+        new_intervention(input$reference)
+        updateSelectInput(inputId = "reference", selected = new_reference)
       }) %>% bindEvent(input$swap_treatments)
       
       # Swap treatments when button clicked
-      reference_observer <- observe({
-        updateSelectInput(inputId = "reference", selected = new_reference())
-        new_reference(NULL)
-      }) %>% bindEvent(new_reference(), ignoreNULL = TRUE)
+      intervention_observer <- observe({
+        updateSelectInput(inputId = "intervention", selected = new_intervention())
+        new_intervention(NULL)
+      }) %>% bindEvent(new_intervention(), ignoreNULL = TRUE)
       
       return(
         list(
