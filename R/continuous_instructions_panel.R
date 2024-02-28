@@ -8,7 +8,7 @@ ContinuousInstructionsPanelUi <- function(id) {
   ns <- NS(id)
   
   div(
-    p("MetaImpact can take data in wide format (every row is per study) or long format (every row is per  study arm)."),
+    p("MetaPairwise can take data in wide format (every row is per study) or long format (every row is per  study arm)."),
     p("The data file should contain six or ten columns columns for long or wide format respectively. Headings of columns are case sensitive."),
     p("The following columns are needed:"),
     tags$ul(
