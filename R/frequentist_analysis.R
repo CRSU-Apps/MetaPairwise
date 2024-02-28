@@ -59,13 +59,14 @@ PairwiseModelFit_functionF <- function(model) {
 
 #' Create forest plot.
 #'
-#' @param reference Data #### COULD BE REPLACED WITH REFERENCE AND INTERVENTION
+#' @param reference Name of reference treatment.
+#' @param intervention Name of intervention treatment.
 #' @param meta_analysis Meta-analysis object returned from `FreqPair` function.
 #' @param model_effects Either "fixed" or "random".
 #' @param outcome_measure Outcome measure being analysed. One of: "OR", "RR", "RD", "MD", "SMD".
 #'
 #' @return Forest plot from meta-analysis.
-CreatePairwiseForestPlot <- function(wide_data, meta_analysis, model_effects, outcome_measure) {
+CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, model_effects, outcome_measure) {
   if (model_effects == "fixed") {
     model <- meta_analysis$MA.Fixed
   } else if (model_effects == "random") {
@@ -123,7 +124,7 @@ CreatePairwiseForestPlot <- function(wide_data, meta_analysis, model_effects, ou
       (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2
     ),
     y = model$k + 3, 
-    labels = c(wide_data$T.1[1], wide_data$T.2[1])
+    labels = c(reference, intervention)
   )
   title(glue::glue("Forest plot of studies with overall estimate from {model_effects}-effects model"))
   

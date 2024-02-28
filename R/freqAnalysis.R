@@ -149,7 +149,8 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       
       output$ForestPlotPairF <- renderPlot({
         CreatePairwiseForestPlot(
-          wide_data = WideData(),
+          reference = Pair_ctrl(),
+          intervention = Pair_trt(),
           meta_analysis = freqpair()$MA,
           model_effects = FixRand(),
           outcome_measure = outcome()
@@ -171,7 +172,8 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           }
           
           CreatePairwiseForestPlot(
-            wide_data = WideData(),
+            reference = Pair_ctrl(),
+            intervention = Pair_trt(),
             meta_analysis = freqpair()$MA,
             model_effects = FixRand(),
             outcome_measure = outcome()
