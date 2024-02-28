@@ -1,4 +1,11 @@
 
+# Functions to call based on selected sort criteria
+.data_page_sort_criteria <- list(
+  "File order" = function(df) NullSort(df),
+  "Study name" = function(df) SortByStudyName(df),
+  "Participant count" = function(df) SortByParticipantCount(df)
+)
+
 #' UI for the load data page.
 #'
 #' @param id ID of the module.
@@ -17,6 +24,16 @@ dataPageUI <- function(id) {
         label = NULL,
         buttonLabel = "Select",
         accept = c(".csv", ".xlsx")
+      ),
+      selectInput(
+        inputId = ns("sort_criteria"),
+        label = div(
+          title = "Sort the studies in the forest plots and other analysis outputs",
+          "Sort studies by:",
+          icon(name = "circle-question")
+        ),
+        choices = names(.data_page_sort_criteria),
+        selectize = FALSE
       ),
       p("If you wish to explore the app without using your own data, you are welcome to choose one of the example datasets below."),
       p(
@@ -82,7 +99,7 @@ dataPageServer <- function(id) {
       ContinuousInstructionsPanelServer(id = "continuous_instructions")
       
       # Read in user or default data
-      data <- reactive({
+      loaded_data <- reactive({
         file <- input$data
         if (is.null(file)) {
           if (input$ChooseExample == 'continuousEx') {
@@ -94,12 +111,25 @@ dataPageServer <- function(id) {
           data <- rio::import(file = file$datapath)
         }
         
-        return(CleanData(data))
+        return(data)
+      })
+      
+      # Clean and sort data
+      cleaned_data <- reactive({
+        cleaned_data <- CleanData(loaded_data())
+        # Sort data according to selected criteria
+        cleaned_data <- .data_page_sort_criteria[[input$sort_criteria]](cleaned_data)
+        
+        return(cleaned_data)
+      })
+      
+      wrangled_data <- reactive({
+        WrangleUploadData(cleaned_data())
       })
       
       # Create a table which displays the raw data just uploaded by the user
       output$data <- renderTable({
-        data()
+        cleaned_data()
       })
       
       # Extract treatment names/levels
@@ -108,7 +138,7 @@ dataPageServer <- function(id) {
           levels(
             as_vector(
               lapply(
-                data()[grep(pattern = "^T", names(data()), value = TRUE)],
+                wrangled_data()[grep(pattern = "^T", names(wrangled_data()), value = TRUE)],
                 factor
               )
             )
@@ -119,7 +149,7 @@ dataPageServer <- function(id) {
       return(
         reactive({
           list(
-            data = WrangleUploadData(data()),
+            data = wrangled_data(),
             levels = data_levels()
           )
         })
