@@ -93,7 +93,7 @@ test_that("Should sort continuous data by study name", {
 
 test_that("Should sort binary long data by study size", {
   testServer(dataPageServer, {
-    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise.csv"), sort_criteria = "File order")
+    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise_Long.csv"), sort_criteria = "File order")
     unsorted_studies <- unique(wrangled_data()$Study)
     
     session$setInputs(sort_criteria = "Participant count")
@@ -111,7 +111,7 @@ test_that("Should sort binary long data by study size", {
 
 test_that("Should sort binary wide data by study size", {
   testServer(dataPageServer, {
-    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise_wide.csv"), sort_criteria = "File order")
+    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise_Wide.csv"), sort_criteria = "File order")
     unsorted_studies <- unique(wrangled_data()$Study)
     
     session$setInputs(sort_criteria = "Participant count")
@@ -129,7 +129,7 @@ test_that("Should sort binary wide data by study size", {
 
 test_that("Should sort continuous long data by study size", {
   testServer(dataPageServer, {
-    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Continuous_Pairwise.csv"), sort_criteria = "File order")
+    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Continuous_Pairwise_Long.csv"), sort_criteria = "File order")
     unsorted_studies <- unique(wrangled_data()$Study)
     
     session$setInputs(sort_criteria = "Participant count")
