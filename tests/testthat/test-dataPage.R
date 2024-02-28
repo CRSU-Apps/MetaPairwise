@@ -1,26 +1,26 @@
 
 test_that("Data extracted from example binary file", {
   testServer(dataPageServer, {
-    session$setInputs(ChooseExample = "binaryEx", sort_data = FALSE)
+    session$setInputs(ChooseExample = "binaryEx")
     
-    expect_equal(loaded_data(), rio::import("data/AntiVEGF_Binary_Pairwise.csv"))
+    expect_equal(loaded_data(), rio::import("data/AntiVEGF_Binary_Pairwise_Long.csv"))
   })
 })
 
 test_that("Data extracted from example continuous file", {
   testServer(dataPageServer, {
-    session$setInputs(ChooseExample = "continuousEx", sort_data = FALSE)
+    session$setInputs(ChooseExample = "continuousEx")
     
-    expect_equal(loaded_data(), rio::import("data/AntiVEGF_Continuous_Pairwise.csv"))
+    expect_equal(loaded_data(), rio::import("data/AntiVEGF_Continuous_Pairwise_Long.csv"))
   })
 })
 
 test_that("Binary data matches between .csv and .xlsx files", {
   testServer(dataPageServer, {
-    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise.csv"), sort_data = FALSE)
+    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise_Long.csv"))
     csv_data = loaded_data()
     
-    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise.xlsx"))
+    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise_Long.xlsx"))
     xlsx_data = loaded_data()
     
     expect_equal(xlsx_data, csv_data)
@@ -29,10 +29,10 @@ test_that("Binary data matches between .csv and .xlsx files", {
 
 test_that("Continuous data matches between .csv and .xlsx files", {
   testServer(dataPageServer, {
-    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Continuous_Pairwise.csv"), sort_data = FALSE)
+    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Continuous_Pairwise_Long.csv"))
     csv_data = loaded_data()
     
-    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Continuous_Pairwise.xlsx"))
+    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Continuous_Pairwise_Long.xlsx"))
     xlsx_data = loaded_data()
     
     expect_equal(xlsx_data, csv_data)
@@ -93,7 +93,7 @@ test_that("Should sort continuous data by study name", {
 
 test_that("Should sort binary long data by study size", {
   testServer(dataPageServer, {
-    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise.csv"), sort_criteria = "File order")
+    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise_Long.csv"), sort_criteria = "File order")
     unsorted_studies <- unique(wrangled_data()$Study)
     
     session$setInputs(sort_criteria = "Participant count")
@@ -111,7 +111,7 @@ test_that("Should sort binary long data by study size", {
 
 test_that("Should sort binary wide data by study size", {
   testServer(dataPageServer, {
-    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise_wide.csv"), sort_criteria = "File order")
+    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Binary_Pairwise_Wide.csv"), sort_criteria = "File order")
     unsorted_studies <- unique(wrangled_data()$Study)
     
     session$setInputs(sort_criteria = "Participant count")
@@ -129,7 +129,7 @@ test_that("Should sort binary wide data by study size", {
 
 test_that("Should sort continuous long data by study size", {
   testServer(dataPageServer, {
-    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Continuous_Pairwise.csv"), sort_criteria = "File order")
+    session$setInputs(data = data.frame(datapath = "data/AntiVEGF_Continuous_Pairwise_Long.csv"), sort_criteria = "File order")
     unsorted_studies <- unique(wrangled_data()$Study)
     
     session$setInputs(sort_criteria = "Participant count")

@@ -1,6 +1,6 @@
 
 test_that(".FixColumnNameCases() fixes cases for continuous long data", {
-  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise_Long.csv"))
   names(data) <- c("sTuDy", "t", "n", "mEaN", "sD")
   allowed_names = c("Study", "T", "N", "Mean", "SD")
   
@@ -14,7 +14,7 @@ test_that(".FixColumnNameCases() fixes cases for continuous long data", {
 })
 
 test_that(".FixColumnNameCases() fixes cases for continuous wide data", {
-  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise_wide.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise_Wide.csv"))
   
   arm_fields = c("t", "n", "mEaN", "sD")
   names(data) <- c("sTuDy", paste0(arm_fields, ".1"), paste0(arm_fields, ".2"))
@@ -32,7 +32,7 @@ test_that(".FixColumnNameCases() fixes cases for continuous wide data", {
 })
 
 test_that(".FixColumnNameCases() fixes cases for binary long data", {
-  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_Long.csv"))
   names(data) <- c("sTuDy", "t", "r", "n")
   allowed_names = c("Study", "T", "R", "N")
   
@@ -46,7 +46,7 @@ test_that(".FixColumnNameCases() fixes cases for binary long data", {
 })
 
 test_that(".FixColumnNameCases() fixes cases for binary wide data", {
-  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_wide.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_Wide.csv"))
   
   arm_fields = c("t", "r", "n")
   names(data) <- c("sTuDy", paste0(arm_fields, ".1"), paste0(arm_fields, ".2"))
@@ -64,7 +64,7 @@ test_that(".FixColumnNameCases() fixes cases for binary wide data", {
 })
 
 test_that(".AddStudyIds() adds study IDs for continuous long data", {
-  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise_Long.csv"))
   
   wrangled_data <- .AddStudyIds(data)
   
@@ -81,7 +81,7 @@ test_that(".AddStudyIds() adds study IDs for continuous long data", {
 })
 
 test_that(".AddStudyIds() adds study IDs for continuous wide data", {
-  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise_wide.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise_Wide.csv"))
   
   wrangled_data <- .AddStudyIds(data)
   
@@ -98,7 +98,7 @@ test_that(".AddStudyIds() adds study IDs for continuous wide data", {
 })
 
 test_that(".AddStudyIds() adds study IDs for binary long data", {
-  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_Long.csv"))
   
   wrangled_data <- .AddStudyIds(data)
   
@@ -115,7 +115,7 @@ test_that(".AddStudyIds() adds study IDs for binary long data", {
 })
 
 test_that(".AddStudyIds() adds study IDs for binary wide data", {
-  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_wide.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_Wide.csv"))
   
   wrangled_data <- .AddStudyIds(data)
   
@@ -132,7 +132,7 @@ test_that(".AddStudyIds() adds study IDs for binary wide data", {
 })
 
 test_that("WrangleUploadData() wrangles continuous long data to be usable in the rest of the app", {
-  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise_Long.csv"))
   
   wrangled_data <- WrangleUploadData(data)
   
@@ -148,7 +148,7 @@ test_that("WrangleUploadData() wrangles continuous long data to be usable in the
 })
 
 test_that("WrangleUploadData() wrangles continuous wide data to be usable in the rest of the app", {
-  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise_wide.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Continuous_Pairwise_Wide.csv"))
   
   wrangled_data <- WrangleUploadData(data)
 
@@ -177,7 +177,7 @@ test_that("WrangleUploadData() wrangles continuous wide data to be usable in the
 })
 
 test_that("WrangleUploadData() wrangles binary long data to be usable in the rest of the app", {
-  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_Long.csv"))
   
   wrangled_data <- WrangleUploadData(data)
   
@@ -193,7 +193,7 @@ test_that("WrangleUploadData() wrangles binary long data to be usable in the res
 })
 
 test_that("WrangleUploadData() wrangles binary wide data to be usable in the rest of the app", {
-  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_wide.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_Wide.csv"))
   
   wrangled_data <- WrangleUploadData(data)
   

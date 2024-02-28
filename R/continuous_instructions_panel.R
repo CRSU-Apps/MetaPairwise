@@ -5,8 +5,10 @@
 #'
 #' @return Div containing panel.
 ContinuousInstructionsPanelUi <- function(id) {
+  ns <- NS(id)
+  
   div(
-    p("MetaImpact can take data in wide format (every row is per study) or long format (every row is per  study arm)."),
+    p("MetaPairwise can take data in wide format (every row is per study) or long format (every row is per  study arm)."),
     p("The data file should contain six or ten columns columns for long or wide format respectively. Headings of columns are case sensitive."),
     p("The following columns are needed:"),
     tags$ul(
@@ -47,7 +49,9 @@ ContinuousInstructionsPanelUi <- function(id) {
         tags$strong("N.1 & N.2"),
         " containing the number of participants for study arm 1 and 2 respectively."
       )
-    )
+    ),
+    downloadButton(outputId = ns("long_download"), label = "Download long format example"),
+    downloadButton(outputId = ns("wide_download"), label = "Download wide format example")
   )
 }
 
@@ -58,7 +62,19 @@ ContinuousInstructionsPanelServer <- function(id) {
   moduleServer(
     id,
     function(input, output, session) {
-      # Do nothing
+      output$long_download <- downloadHandler(
+        filename = "AntiVEGF_Continuous_Pairwise_Long.csv",
+        content = function(file) {
+          file.copy("data/AntiVEGF_Continuous_Pairwise_Long.csv", file)
+        }
+      )
+      
+      output$wide_download <- downloadHandler(
+        filename = "AntiVEGF_Continuous_Pairwise_Wide.csv",
+        content = function(file) {
+          file.copy("data/AntiVEGF_Continuous_Pairwise_Wide.csv", file)
+        }
+      )
     }
   )
 }
