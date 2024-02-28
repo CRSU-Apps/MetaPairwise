@@ -84,3 +84,18 @@ WrangleUploadData <- function(data) {
   
   return(new_df)
 }
+
+#' Find the treatments compared in a given study.
+#'
+#' @param data Data frame in which to find treatments.
+#' @param study_name Name of study for which to find treatments.
+#'
+#' @return Vector of treatments in the given study.
+FindTreatmentsForStudy <- function(data, study_name) {
+  rows = data$Study == study_name
+  columns = grep("^T(\\.[12])?$", names(data))
+  treatments <- unlist(data[rows, columns])
+  names(treatments) <- c()
+  
+  return(treatments)
+}
