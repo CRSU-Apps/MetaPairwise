@@ -67,6 +67,27 @@ freqAnalysisUI <- function(id) {
           )
         )
       ),
+      br(),
+      fluidRow(
+        column(
+          width = 10,
+          withSpinner(
+            plotOutput(outputId = ns("LabbePlotPairF"))
+          )
+        ),
+        column(
+          width = 2,
+          radioButtons(
+            inputId = ns('labbepairF_choice'),
+            label = "Download L'abbé plot as:",
+            choices = c('pdf','png')
+          ),
+          downloadButton(
+            outputId = ns('labbepairF_download'),
+            label = "Download L'abbé plot"
+          )
+        )
+      ),
       fluidRow(
         align = 'center',
         downloadButton(
@@ -162,13 +183,15 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       
       output$forestpairF_download <- downloadHandler(
         filename = function() {
-          paste0("PairwiseAnalysis.", input$forestpairF_choice)
+          paste0("forest_plot.", input$forestpairF_choice)
         },
         content = function(file) {
           if (input$forestpairF_choice == 'pdf') {
             pdf(file = file, width = 15)
-          } else {
+          } else if (input$forestpairF_choice == 'png') {
             png(file = file, width = 1000)
+          } else {
+            stop("Only 'pdf' and 'png' file types are supported")
           }
           
           CreatePairwiseForestPlot(
@@ -190,6 +213,44 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       output$ModelFitF <- renderUI({
         freqpair()$ModelFit
       })
+      
+      output$LabbePlotPairF <- renderPlot({
+        if (FixRand() == 'fixed') {
+          meta_analysis <- freqpair()$MA$MA.Fixed
+        } else if (FixRand() == 'random') {
+          meta_analysis <- freqpair()$MA$MA.Random
+        } else {
+          stop("Models effects should be 'fixed' or 'random'")
+        }
+        
+        metafor::labbe(meta_analysis)
+      })
+      
+      output$LabbepairF_download <- downloadHandler(
+        filename = function() {
+          paste0("labbePlot", input$forestpairF_choice)
+        },
+        content = function(file) {
+          if (input$labbepairF_choice == 'pdf') {
+            pdf(file = file)
+          } else if (input$forestpairF_choice == 'png') {
+            png(file = file)
+          } else {
+            stop("Only 'pdf' and 'png' file types are supported")
+          }
+          
+          if (FixRand() == 'fixed') {
+            meta_analysis <- freqpair()$MA$MA.Fixed
+          } else if (FixRand() == 'random') {
+            meta_analysis <- freqpair()$MA$MA.Random
+          } else {
+            stop("Models effects should be 'fixed' or 'random'")
+          }
+          
+          metafor::labbe(meta_analysis)
+          dev.off()
+        }
+      )
       
       ## Reporter Function ##
       

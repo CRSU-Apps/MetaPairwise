@@ -62,15 +62,94 @@ SwapTrt <- function(CONBI, data, trt) { # inputs: continuous/binary; data frame;
 ### Frequentist Pairwise ###
 
 FreqPair <- function(data, outcome, CONBI, model) { #inputs: data frame in wide format; outcome type; continuous or binary' fixed or random (or both);
-  if (CONBI=='continuous') {
-    MAdata <- escalc(measure=outcome, m1i=Mean.1, m2i=Mean.2, sd1i=SD.1, sd2i=SD.2, n1i=N.1, n2i=N.2, data=data)
+  if (CONBI == "continuous") {
+    MAdata <- metafor::escalc(
+      measure = outcome,
+      m1i = Mean.1,
+      m2i = Mean.2,
+      sd1i = SD.1,
+      sd2i = SD.2,
+      n1i = N.1,
+      n2i = N.2,
+      data = data
+    )
+  } else if (CONBI == "binary") {
+    MAdata <- metafor::escalc(
+      measure = outcome,
+      ai = R.1,
+      bi = N.1 - R.1,
+      ci = R.2,
+      di = N.2 - R.2,
+      data = data
+    )
   } else {
-    MAdata <- escalc(measure=outcome, ai=R.1, bi=N.1-R.1, ci=R.2, di=N.2-R.2, data=data)
+    stop("Outcome type must be either 'continuous' or 'binary'")
   }
+
   MAdata$sei <- sqrt(MAdata$vi)  #standard error
-  if (model=='fixed' | model=='both') {MA.Fixed <- rma(yi, vi, slab=Study, data=MAdata, method="FE", measure=outcome)} #fixed effects#
-  if (model=='random' | model=='both') {MA.Random <- rma(yi, vi, slab=Study, data=MAdata, method="PM", measure=outcome)} #random effects #
-  list(MAdata=MAdata, MA.Random=MA.Random, MA.Fixed=MA.Fixed)
+  if (model == "fixed" || model == "both") {
+    if (CONBI == "continuous") {
+      MA.Fixed <- metafor::rma(
+        m1i = Mean.1,
+        m2i = Mean.2,
+        sd1i = SD.1,
+        sd2i = SD.2,
+        n1i = N.1,
+        n2i = N.2,
+        slab = Study,
+        data = MAdata,
+        method = "FE",
+        measure = outcome
+      )
+    } else if (CONBI == "binary") {
+      MA.Fixed <- metafor::rma(
+        ai = R.1,
+        bi = N.1 - R.1,
+        ci = R.2,
+        di = N.2 - R.2,
+        slab = Study,
+        data = MAdata,
+        method = "FE",
+        measure = outcome
+      )
+    }
+  }
+  
+  if (model == "random" || model == "both") {
+    if (CONBI == "continuous") {
+      MA.Random <- metafor::rma(
+        m1i = Mean.1,
+        m2i = Mean.2,
+        sd1i = SD.1,
+        sd2i = SD.2,
+        n1i = N.1,
+        n2i = N.2,
+        slab = Study,
+        data = MAdata,
+        method = "PM",
+        measure = outcome
+      )
+    } else if (CONBI == "binary") {
+      MA.Random <- metafor::rma(
+        ai = R.1,
+        bi = N.1 - R.1,
+        ci = R.2,
+        di = N.2 - R.2,
+        slab = Study,
+        data = MAdata,
+        method = "PM",
+        measure = outcome
+      )
+    }
+  }
+  
+  return(
+    list(
+      MAdata = MAdata,
+      MA.Random = MA.Random,
+      MA.Fixed = MA.Fixed
+    )
+  )
 } 
 
 ## DOESN'T WORK UNLESS MODEL=='BOTH'
@@ -78,7 +157,7 @@ FreqPair <- function(data, outcome, CONBI, model) { #inputs: data frame in wide 
 ### Forest Plot ###
 
 FreqNMAForest <- function(NMA, model, ref) { #inputs: NMA object; fixed or random; reference treatment
-  metafor::forest(NMA,reference.group=ref, pooled=model)
+  metafor::forest(NMA, reference.group = ref, pooled = model)
 }
 
 
