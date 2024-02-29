@@ -10,7 +10,7 @@ bayesAnalysisUI <- function(id) {
       )
     ),
     conditionalPanel(
-      condition = "input.BayesRun!=0",
+      condition = "output.analysis_up_to_date",
       ns = ns,
       fluidRow(
         p(
@@ -101,6 +101,22 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
   moduleServer(
     id,
     function(input, output, session) {
+      
+      analysis_up_to_date <- reactiveVal(FALSE)
+      output$analysis_up_to_date <- reactive({
+        return(analysis_up_to_date())
+      })
+      outputOptions(output, "analysis_up_to_date", suspendWhenHidden = FALSE)
+      
+      # Validate output when button clicked
+      observe({
+        analysis_up_to_date(TRUE)
+      }) %>% bindEvent(input$BayesRun)
+      
+      # Clear output when options change
+      observe({
+        analysis_up_to_date(FALSE)
+      }) %>% bindEvent(data(), outcome(), Pair_trt(), Pair_ctrl(), prior(), iter(), chains(), burn())
       
       ### Summary sentence of meta-analysis ###
       #-----------------------------------#
