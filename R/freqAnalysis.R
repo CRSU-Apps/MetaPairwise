@@ -68,23 +68,27 @@ freqAnalysisUI <- function(id) {
         )
       ),
       br(),
-      fluidRow(
-        column(
-          width = 10,
-          withSpinner(
-            plotOutput(outputId = ns("LabbePlotPairF"))
-          )
-        ),
-        column(
-          width = 2,
-          radioButtons(
-            inputId = ns('labbepairF_choice'),
-            label = "Download L'abbé plot as:",
-            choices = c('pdf','png')
+      conditionalPanel(
+        condition = "output.labbe_available",
+        ns = ns,
+        fluidRow(
+          column(
+            width = 10,
+            withSpinner(
+              plotOutput(outputId = ns("LabbePlotPairF"))
+            )
           ),
-          downloadButton(
-            outputId = ns('labbepairF_download'),
-            label = "Download L'abbé plot"
+          column(
+            width = 2,
+            radioButtons(
+              inputId = ns('labbepairF_choice'),
+              label = "Download L'abbé plot as:",
+              choices = c('pdf','png')
+            ),
+            downloadButton(
+              outputId = ns('labbepairF_download'),
+              label = "Download L'abbé plot"
+            )
           )
         )
       ),
@@ -213,6 +217,11 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       output$ModelFitF <- renderUI({
         freqpair()$ModelFit
       })
+      
+      output$labbe_available <- reactive({
+        return(ContBin() == "binary")
+      })
+      outputOptions(output, "labbe_available", suspendWhenHidden = FALSE)
       
       output$LabbePlotPairF <- renderPlot({
         if (FixRand() == 'fixed') {
