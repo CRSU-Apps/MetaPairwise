@@ -234,16 +234,17 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         }
         
         metafor::labbe(meta_analysis)
+        title(glue::glue("L'abbé plot from {FixRand()}-effects model"))
       })
       
-      output$LabbepairF_download <- downloadHandler(
+      output$labbepairF_download <- downloadHandler(
         filename = function() {
-          paste0("labbePlot", input$forestpairF_choice)
+          paste0("labbePlot.", input$labbepairF_choice)
         },
         content = function(file) {
           if (input$labbepairF_choice == 'pdf') {
             pdf(file = file)
-          } else if (input$forestpairF_choice == 'png') {
+          } else if (input$labbepairF_choice == 'png') {
             png(file = file)
           } else {
             stop("Only 'pdf' and 'png' file types are supported")
@@ -258,6 +259,8 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           }
           
           metafor::labbe(meta_analysis)
+          title(glue::glue("L'abbé plot from {FixRand()}-effects model"))
+          
           dev.off()
         }
       )
