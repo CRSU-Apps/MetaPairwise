@@ -11,7 +11,7 @@ freqAnalysisUI <- function(id) {
       )
     ),
     conditionalPanel(
-      condition = "output.analysis_up_to_date",
+      condition = "input.FreqRun != 0",
       ns = ns,
       fluidRow(
         p(htmlOutput(outputId = ns("SynthesisSummaryFreq"))),
@@ -130,22 +130,6 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           )
         }
       )
-      
-      analysis_up_to_date <- reactiveVal(FALSE)
-      output$analysis_up_to_date <- reactive({
-        return(analysis_up_to_date())
-      })
-      outputOptions(output, "analysis_up_to_date", suspendWhenHidden = FALSE)
-      
-      # Validate output when button clicked
-      observe({
-        analysis_up_to_date(TRUE)
-      }) %>% bindEvent(input$FreqRun)
-      
-      # Clear output when options change
-      observe({
-        analysis_up_to_date(FALSE)
-      }) %>% bindEvent(data(), outcome(), Pair_trt(), Pair_ctrl())
       
       output$SynthesisSummaryFreq <- renderText({
         FreqSummaryText()
