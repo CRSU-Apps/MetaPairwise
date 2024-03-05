@@ -126,27 +126,20 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       ### Summary sentence of meta-analysis ###
       #-----------------------------------#
       
-      FreqSummaryText <- eventReactive(
-        input$FreqRun,
-        {
-          paste0(
-            "Results for ",
-            strong(FixRand()),
-            "-effects ",
-            strong("Pairwise"),
-            " meta-analysis of ",
-            strong(outcome()),
-            "s using ",
-            strong("frequentist"),
-            " methodology, with reference treatment ",
-            strong(Pair_ctrl()),
-            "."
-          )
-        }
-      )
-      
       output$SynthesisSummaryFreq <- renderText({
-        FreqSummaryText()
+        paste0(
+          "Results for ",
+          strong(FixRand()),
+          "-effects ",
+          strong("Pairwise"),
+          " meta-analysis of ",
+          strong(outcome()),
+          "s using ",
+          strong("frequentist"),
+          " methodology, with reference treatment ",
+          strong(Pair_ctrl()),
+          "."
+        )
       })
       
       
@@ -163,14 +156,6 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         )
       })
       
-      observeEvent(
-        input$FreqRun,
-        {
-          # reopen panel when a user re-runs analysis
-          updateCollapse(session = session, id = "FreqID", open = "Frequentist Analysis")
-        }
-      )
-      
       freqpair <- eventReactive(
         input$FreqRun,
         {
@@ -185,7 +170,7 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         }
       )
       
-      freq_summary <- reactive({
+      output$SummaryTableF <- renderUI({
         if (FixRand() == "fixed") {
           return(PairwiseSummary_functionF(outcome(), freqpair()$MA.Fixed))
         } else if (FixRand() == "random") {
@@ -193,7 +178,7 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         }
       })
       
-      model_fit <- reactive({
+      output$ModelFitF <- renderUI({
         if (FixRand() == "fixed") {
           return(PairwiseModelFit_functionF(freqpair()$MA.Fixed))
         } else if (FixRand() == 'random') {
@@ -238,14 +223,6 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           dev.off()
         }
       )
-      
-      output$SummaryTableF <- renderUI({
-        freq_summary()
-      })
-      
-      output$ModelFitF <- renderUI({
-        model_fit()
-      })
       
       output$labbe_available <- reactive({
         return(ContBin() == "binary")

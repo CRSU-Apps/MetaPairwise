@@ -45,9 +45,9 @@ bayesAnalysisUI <- function(id) {
           )
         )
       ),
-      htmlOutput(
-        outputId = ns("ModelFitB"),
-        align = "center"
+      div(
+        textOutput(outputId = ns("ModelFitB")),
+        style = "text-align: center;"
       ),
       h3("Trace Plot"),
       fluidRow(
@@ -172,56 +172,6 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
         }
       )
       
-      
-      PairwiseSummary_functionB <- function(outcome, MA.Model, model) {   # MA.Model has to have MAData, MA.Fixed and MA.Random
-        line0 <- strong("Results")
-        line1 <- paste0("Number of studies: ", nrow(MA.Model$MA.Fixed$data_wide)) # same for fixed or random
-        if (model == "random") {
-          # already exponentiated where needed within BayesPair function
-          line2 <- paste0(
-            "Pooled estimate: ",
-            round(MA.Model$MAdata[MA.Model$MAdata$Study == "RE Model", "est"], 2),
-            " (95% CI: ",
-            round(MA.Model$MAdata[MA.Model$MAdata$Study == "RE Model","lci"], 2),
-            " to ",
-            round(MA.Model$MAdata[MA.Model$MAdata$Study == "RE Model","uci"], 2),
-            ")"
-          )
-          if (outcome == "OR") {
-            line3 <- "Between study standard-deviation (log-odds scale): "
-          } else if (outcome == "RR") {
-            line3 <- "Between study standard-deviation (log-probability scale): "
-          } else {
-            line3 <- "Between study standard-deviation: "
-          }
-          line3 <- paste0(
-            line3,
-            round(MA.Model$MA.Random$fit_sum["tau[1]", 1], 3),
-            " (95% CI: ",
-            round(MA.Model$MA.Random$fit_sum["tau[1]", 4], 3),
-            " to ",
-            round(MA.Model$MA.Random$fit_sum["tau[1]", 8], 3),
-            ")"
-          )
-        } else {
-          # already exponentiated where needed within BayesPair function
-          line2 <- paste(
-            "Pooled estimate: ",
-            round(MA.Model$MAdata[MA.Model$MAdata$Study == "FE Model", "est"], 2),
-            " (95% CI: ",
-            round(MA.Model$MAdata[MA.Model$MAdata$Study == "FE Model", "lci"], 2),
-            " to ",
-            round(MA.Model$MAdata[MA.Model$MAdata$Study == "FE Model", "uci"], 2),
-            ")"
-          )
-          line3 <- "For fixed models, between study standard-deviation is set to 0."
-        }
-        HTML(paste(line0, line1, line2, line3, sep = "<br/>"))
-      }
-      PairwiseModelFit_functionB <- function(MA.Model) {
-        HTML(paste("Rhat: ", round(MA.Model$Rhat.max, 2), sep = ""))
-      }
-      
       bayespair <- eventReactive(
         input$BayesRun,
         {
@@ -249,20 +199,6 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
             ggtitle(glue::glue("Forest plot of studies with overall estimate from {FixRand()}-effects model")) +
             theme(plot.title = element_text(hjust = 0.5, size = 13, face = "bold"))
         )
-      })
-      
-      bayes_summary <- reactive({
-        return(
-          PairwiseSummary_functionB(outcome(), bayespair(), FixRand())
-        )
-      })
-      
-      bayes_model_fit <- reactive({
-        if (FixRand() == "fixed") {
-          return(PairwiseModelFit_functionB(bayespair()$MA.Fixed))
-        } else if (FixRand() == "random") {
-          return(PairwiseModelFit_functionB(bayespair()$MA.Random))
-        }
       })
       
       bayes_trace <- reactive({
@@ -298,32 +234,16 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
         }
       })
       
-      output$ForestPlotPairB <- renderPlot({
-        bayes_forest()
-      })
-      
-      output$forestpairB_download <- downloadHandler(
-        filename = function() {
-          paste0("PairwiseAnalysis.", input$forestpairB_choice)
-        },
-        content = function(file) {
-          plot <- bayes_orest()
-          if (input$forestpairB_choice == "png") {
-            ggsave(file, plot, height = 7, width = 12, units = "in", device = "png")
-          } else if (input$forestpairB_choice == "pdf") {
-            ggsave(file, plot, height = 7, width = 12, units = "in", device = "pdf")
-          } else {
-            stop("Only 'pdf' and 'png' file types are supported")
-          }
-        }
-      )
-      
       output$SummaryTableB <- renderUI({
-        bayes_summary()
+        PairwiseSummary_functionB(outcome(), bayespair(), FixRand())
       })
       
-      output$ModelFitB <- renderUI({
-        bayes_model_fit()
+      output$ModelFitB <- renderText({
+        if (FixRand() == "fixed") {
+          return(paste0("Rhat: ", round(bayespair()$MA.Fixed$Rhat.max, 2)))
+        } else if (FixRand() == "random") {
+          return(paste0("Rhat: ", round(bayespair()$MA.Random$Rhat.max, 2)))
+        }
       })
       
       output$TracePlot <- renderPlot({
@@ -339,6 +259,26 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           if (input$forestpairB_choice == "png") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "png")
           } else if (input$forestpairB_choice == "png") {
+            ggsave(file, plot, height = 7, width = 12, units = "in", device = "pdf")
+          } else {
+            stop("Only 'pdf' and 'png' file types are supported")
+          }
+        }
+      )
+      
+      output$ForestPlotPairB <- renderPlot({
+        bayes_forest()
+      })
+      
+      output$forestpairB_download <- downloadHandler(
+        filename = function() {
+          paste0("PairwiseAnalysis.", input$forestpairB_choice)
+        },
+        content = function(file) {
+          plot <- bayes_orest()
+          if (input$forestpairB_choice == "png") {
+            ggsave(file, plot, height = 7, width = 12, units = "in", device = "png")
+          } else if (input$forestpairB_choice == "pdf") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "pdf")
           } else {
             stop("Only 'pdf' and 'png' file types are supported")
