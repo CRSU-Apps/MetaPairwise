@@ -65,11 +65,11 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
       #--------------------------#
       
       LongData <- reactive({               # convert wide format to long if need be
-        Wide2Long(data=data()$data)
+        Wide2Long(data=data())
       })
       
       WideData <- reactive({               # convert long format to wide if need be (and ensure trt and ctrl are the right way round)
-        SwapTrt(CONBI=ContBin(), data=Long2Wide(data=data()$data), trt=Pair_trt())
+        SwapTrt(CONBI=ContBin(), data=Long2Wide(data=data()), trt=Pair_trt())
       })
       
       observeEvent( input$BayesRun, {                           # reopen panel when a user re-runs analysis
