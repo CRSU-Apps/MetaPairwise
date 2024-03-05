@@ -108,10 +108,10 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
       })
       outputOptions(output, "analysis_up_to_date", suspendWhenHidden = FALSE)
       
-      # Validate output when button clicked
+      # Validate output when meta-analysis run
       observe({
         analysis_up_to_date(TRUE)
-      }) %>% bindEvent(input$BayesRun)
+      }) %>% bindEvent(bayespair())
       
       # Clear output when options change
       observe({
@@ -225,72 +225,81 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
       bayespair <- eventReactive(
         input$BayesRun,
         {
-          # run Bayesian pairwise MA and obtain plots etc.
-          information <- list()
-          information$MA <- BayesPair(
-            CONBI = ContBin(),
-            data = WideData(),
-            trt = Pair_trt(),
-            ctrl = Pair_ctrl(),
-            outcome = outcome(),
-            chains = chains(),
-            iter = iter(),
-            warmup = burn(),
-            model = "both",
-            prior = prior()
+          # run Bayesian pairwise MA
+          return(
+            BayesPair(
+              CONBI = ContBin(),
+              data = WideData(),
+              trt = Pair_trt(),
+              ctrl = Pair_ctrl(),
+              outcome = outcome(),
+              chains = chains(),
+              iter = iter(),
+              warmup = burn(),
+              model = "both",
+              prior = prior()
+            )
           )
-          if (FixRand() == "fixed") {
-            information$Forest <- {
-              BayesPairForest(information$MA$MAdata, outcome = outcome(), model = "fixed") +
-                ggtitle("Forest plot of studies with overall estimate from fixed-effects model") +
-                theme(plot.title = element_text(hjust = 0.5, size = 13, face = "bold"))
-            }
-            information$Summary <- PairwiseSummary_functionB(outcome(), information$MA, "fixed")
-            information$ModelFit <- PairwiseModelFit_functionB(information$MA$MA.Fixed)
-            information$Trace <- {
-              stan_trace(information$MA$MA.Fixed$fit, pars = "theta") +
-                theme(legend.position = "none", aspect.ratio = 0.45, axis.title = element_text(size = 10, face = "bold")) +
-                labs(y = "Pooled estimate", x = "Iteration")
-            }
-          } else if (FixRand() == "random") {
-            information$Forest <- {
-              BayesPairForest(information$MA$MAdata, outcome = outcome(), model = "random") +
-                ggtitle("Forest plot of studies with overall estimate from random-effects model") +
-                theme(plot.title = element_text(hjust = 0.5, size = 13, face = "bold"))
-            }
-            information$Summary <- PairwiseSummary_functionB(outcome(), information$MA, "random")
-            information$ModelFit <- PairwiseModelFit_functionB(information$MA$MA.Random)
-            information$Trace <- {
-              stan_trace(information$MA$MA.Random$fit, pars = c("theta","tau")) +
-                theme(
-                  legend.position = "none",
-                  strip.placement = "outside",
-                  aspect.ratio = 0.3,
-                  axis.title = element_text(size = 10, face = "bold")
-                ) +
-                labs(x = "Iteration") +
-                facet_wrap(
-                  ~parameter,
-                  strip.position = "left",
-                  nrow = 2,
-                  scales = "free",
-                  labeller = as_labeller(
-                    c(
-                      theta = "Pooled estimate",
-                      "tau[1]" = "Between-study SD"
-                    )
-                  )
-                )
-            }
-          }
-          return(information)
         }
       )
       
+      bayes_forest <- reactive({
+        return(
+          BayesPairForest(bayespair()$MAdata, outcome = outcome(), model = FixRand()) +
+            ggtitle(glue::glue("Forest plot of studies with overall estimate from {FixRand()}-effects model")) +
+            theme(plot.title = element_text(hjust = 0.5, size = 13, face = "bold"))
+        )
+      })
+      
+      bayes_summary <- reactive({
+        return(
+          PairwiseSummary_functionB(outcome(), bayespair(), FixRand())
+        )
+      })
+      
+      bayes_model_fit <- reactive({
+        if (FixRand() == "fixed") {
+          return(PairwiseModelFit_functionB(bayespair()$MA.Fixed))
+        } else if (FixRand() == "random") {
+          return(PairwiseModelFit_functionB(bayespair()$MA.Random))
+        }
+      })
+      
+      bayes_trace <- reactive({
+        if (FixRand() == "fixed") {
+          return(
+            stan_trace(bayespair()$MA.Fixed$fit, pars = "theta") +
+              theme(legend.position = "none", aspect.ratio = 0.45, axis.title = element_text(size = 10, face = "bold")) +
+              labs(y = "Pooled estimate", x = "Iteration")
+          )
+        } else if (FixRand() == "random") {
+          return(
+            stan_trace(bayespair()$MA.Random$fit, pars = c("theta","tau")) +
+              theme(
+                legend.position = "none",
+                strip.placement = "outside",
+                aspect.ratio = 0.3,
+                axis.title = element_text(size = 10, face = "bold")
+              ) +
+              labs(x = "Iteration") +
+              facet_wrap(
+                ~parameter,
+                strip.position = "left",
+                nrow = 2,
+                scales = "free",
+                labeller = as_labeller(
+                  c(
+                    theta = "Pooled estimate",
+                    "tau[1]" = "Between-study SD"
+                  )
+                )
+              )
+          )
+        }
+      })
       
       output$ForestPlotPairB <- renderPlot({
-        # Forest plot
-        bayespair()$Forest
+        bayes_forest()
       })
       
       output$forestpairB_download <- downloadHandler(
@@ -298,7 +307,7 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           paste0("PairwiseAnalysis.", input$forestpairB_choice)
         },
         content = function(file) {
-          plot <- bayespair()$Forest
+          plot <- bayes_orest()
           if (input$forestpairB_choice == "png") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "png")
           } else if (input$forestpairB_choice == "pdf") {
@@ -310,18 +319,15 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
       )
       
       output$SummaryTableB <- renderUI({
-        # Summary table
-        bayespair()$Summary
+        bayes_summary()
       })
       
       output$ModelFitB <- renderUI({
-        # Model fit statistic
-        bayespair()$ModelFit
+        bayes_model_fit()
       })
       
       output$TracePlot <- renderPlot({
-        # Trace plot
-        bayespair()$Trace
+        bayes_trace()
       })
       
       output$tracepair_download <- downloadHandler(
@@ -329,7 +335,7 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           paste0("PairwiseTrace.", input$tracepair_choice)
         },
         content = function(file) {
-          plot <- bayespair()$Trace
+          plot <- bayes_trace()
           if (input$forestpairB_choice == "png") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "png")
           } else if (input$forestpairB_choice == "png") {

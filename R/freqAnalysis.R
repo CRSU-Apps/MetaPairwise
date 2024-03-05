@@ -18,9 +18,7 @@ freqAnalysisUI <- function(id) {
         p("To change the model options, please adjust synthesis options and re-run analysis."),
         fluidRow(
           align = 'center',
-          withSpinner(
-            htmlOutput(outputId = ns("SummaryTableF"))
-          )
+          htmlOutput(outputId = ns("SummaryTableF"))
         ),
         fluidRow(
           align = 'center',
@@ -114,10 +112,10 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       })
       outputOptions(output, "analysis_up_to_date", suspendWhenHidden = FALSE)
       
-      # Validate output when button clicked
+      # Validate output when meta-analysis run
       observe({
         analysis_up_to_date(TRUE)
-      }) %>% bindEvent(input$FreqRun)
+      }) %>% bindEvent(freqpair())
       
       # Clear output when options change
       observe({
@@ -176,24 +174,38 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       freqpair <- eventReactive(
         input$FreqRun,
         {
-          information <- list()
-          information$MA <- FreqPair(data = WideData(), outcome = outcome(), model = 'both', CONBI = ContBin())
-          if (FixRand() == 'fixed') {
-            information$Summary <- PairwiseSummary_functionF(outcome(), information$MA$MA.Fixed)
-            information$ModelFit <- PairwiseModelFit_functionF(information$MA$MA.Fixed)
-          } else if (FixRand() == 'random') {
-            information$Summary <- PairwiseSummary_functionF(outcome(), information$MA$MA.Random)
-            information$ModelFit <- PairwiseModelFit_functionF(information$MA$MA.Random)
-          }
-          return(information)
+          return(
+            FreqPair(
+              data = WideData(),
+              outcome = outcome(),
+              model = 'both',
+              CONBI = ContBin()
+            )
+          )
         }
       )
+      
+      freq_summary <- reactive({
+        if (FixRand() == "fixed") {
+          return(PairwiseSummary_functionF(outcome(), freqpair()$MA.Fixed))
+        } else if (FixRand() == "random") {
+          return(PairwiseSummary_functionF(outcome(), freqpair()$MA.Random))
+        }
+      })
+      
+      model_fit <- reactive({
+        if (FixRand() == "fixed") {
+          return(PairwiseModelFit_functionF(freqpair()$MA.Fixed))
+        } else if (FixRand() == 'random') {
+          return(PairwiseModelFit_functionF(freqpair()$MA.Random))
+        }
+      })
       
       output$ForestPlotPairF <- renderPlot({
         CreatePairwiseForestPlot(
           reference = Pair_ctrl(),
           intervention = Pair_trt(),
-          meta_analysis = freqpair()$MA,
+          meta_analysis = freqpair(),
           model_effects = FixRand(),
           outcome_measure = outcome()
         )
@@ -218,7 +230,7 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           CreatePairwiseForestPlot(
             reference = Pair_ctrl(),
             intervention = Pair_trt(),
-            meta_analysis = freqpair()$MA,
+            meta_analysis = freqpair(),
             model_effects = FixRand(),
             outcome_measure = outcome()
           )
@@ -228,11 +240,11 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       )
       
       output$SummaryTableF <- renderUI({
-        freqpair()$Summary
+        freq_summary()
       })
       
       output$ModelFitF <- renderUI({
-        freqpair()$ModelFit
+        model_fit()
       })
       
       output$labbe_available <- reactive({
@@ -242,9 +254,9 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       
       output$LabbePlotPairF <- renderPlot({
         if (FixRand() == 'fixed') {
-          meta_analysis <- freqpair()$MA$MA.Fixed
+          meta_analysis <- freqpair()$MA.Fixed
         } else if (FixRand() == 'random') {
-          meta_analysis <- freqpair()$MA$MA.Random
+          meta_analysis <- freqpair()$MA.Random
         } else {
           stop("Models effects should be 'fixed' or 'random'")
         }
@@ -267,9 +279,9 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           }
           
           if (FixRand() == 'fixed') {
-            meta_analysis <- freqpair()$MA$MA.Fixed
+            meta_analysis <- freqpair()$MA.Fixed
           } else if (FixRand() == 'random') {
-            meta_analysis <- freqpair()$MA$MA.Random
+            meta_analysis <- freqpair()$MA.Random
           } else {
             stop("Models effects should be 'fixed' or 'random'")
           }
@@ -292,9 +304,9 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
             value = 0.5,
             {
               if (FixRand() == 'fixed') {
-                file.copy(reporter(freqpair()$MA$MA.Fixed, filename = "report", open = FALSE), file)
+                file.copy(reporter(freqpair()$MA.Fixed, filename = "report", open = FALSE), file)
               } else {
-                file.copy(reporter(freqpair()$MA$MA.Random, filename= "report", open = FALSE), file)
+                file.copy(reporter(freqpair()$MA.Random, filename= "report", open = FALSE), file)
               }
               
               setProgress(message = 'File generated', value = 1)
