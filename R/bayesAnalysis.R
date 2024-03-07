@@ -19,9 +19,7 @@ bayesAnalysisUI <- function(id) {
         p("To change the model options, please adjust synthesis options and re-run analysis."),
         fluidRow(
           align = "center",
-          withSpinner(
-            htmlOutput(outputId = ns("SummaryTableB"))
-          )
+          htmlOutput(outputId = ns("SummaryTableB"))
         ),
         # Summary table
         fluidRow(
@@ -111,7 +109,7 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
       # Validate output when meta-analysis run
       observe({
         analysis_up_to_date(TRUE)
-      }) %>% bindEvent(bayespair())
+      }) %>% bindEvent(input$BayesRun)
       
       # Clear output when options change
       observe({
@@ -121,28 +119,22 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
       ### Summary sentence of meta-analysis ###
       #-----------------------------------#
       
-      BayesSummaryText <- eventReactive(
-        input$BayesRun,
-        {
-          paste0(
-            "Results for ",
-            strong(FixRand()),
-            "-effects ",
-            strong("Pairwise"),
-            " meta-analysis of ",
-            strong(outcome()),
-            "s using ",
-            strong("Bayesian"),
-            " methodology, with vague prior ",
-            strong(prior()),
-            " and reference treatment ",
-            strong(Pair_ctrl()),
-            "."
-          )
-        }
-      )
       output$SynthesisSummaryBayes <- renderText({
-        BayesSummaryText()
+        paste0(
+          "Results for ",
+          strong(FixRand()),
+          "-effects ",
+          strong("Pairwise"),
+          " meta-analysis of ",
+          strong(outcome()),
+          "s using ",
+          strong("Bayesian"),
+          " methodology, with vague prior ",
+          strong(prior()),
+          " and reference treatment ",
+          strong(Pair_ctrl()),
+          "."
+        )
       })
       
       
@@ -163,14 +155,6 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           trt = Pair_trt()
         )
       })
-      
-      observeEvent(
-        input$BayesRun,
-        {
-          # reopen panel when a user re-runs analysis
-          updateCollapse(session = session, id = "BayesID", open = "Bayesian Analysis")
-        }
-      )
       
       bayespair <- eventReactive(
         input$BayesRun,

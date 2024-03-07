@@ -115,7 +115,7 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       # Validate output when meta-analysis run
       observe({
         analysis_up_to_date(TRUE)
-      }) %>% bindEvent(freqpair())
+      }) %>% bindEvent(input$FreqRun)
       
       # Clear output when options change
       observe({
