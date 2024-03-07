@@ -69,18 +69,22 @@ PairwiseModelFit_functionF <- function(model) {
 CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, model_effects, outcome_measure) {
   if (model_effects == "fixed") {
     model <- meta_analysis$MA.Fixed
+    other_model <- meta_analysis$MA.Random
   } else if (model_effects == "random") {
     model <- meta_analysis$MA.Random
+    other_model <- meta_analysis$MA.Fixed
   } else {
     stop("Model effects must be 'fixed' or 'random'")
   }
   
   if (outcome_measure == "OR" || outcome_measure == "RR") {
     forestTemp <- metafor::forest(
-      model,
+      x = model,
       atransf = exp,
-      ilab = cbind(R.1, N.1 - R.1, R.2, N.2 - R.2, round(weights(model), 2))
+      ilab = cbind(R.1, N.1 - R.1, R.2, N.2 - R.2, round(weights(model), 2)),
+      ylim = c(-2.5, model$k + 3)
     )
+    metafor::addpoly(other_model)
 
     text(
       x = forestTemp$ilab.xpos,
@@ -90,10 +94,11 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
     )
   } else if (outcome_measure == "RD") {
     forestTemp <- metafor::forest(
-      model,
-      atransf = NA,
-      ilab = cbind(R.1, N.1 - R.1, R.2, N.2 - R.2, round(weights(model), 2))
+      x = model,
+      ilab = cbind(R.1, N.1 - R.1, R.2, N.2 - R.2, round(weights(model), 2)),
+      ylim = c(-2.5, model$k + 3)
     )
+    metafor::addpoly(other_model)
 
     text(
       x = forestTemp$ilab.xpos,
@@ -103,10 +108,11 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
     )
   } else if (outcome_measure == "MD" || outcome_measure == "SMD") {
     forestTemp <- metafor::forest(
-      model,
-      atransf = NA,
-      ilab = cbind(Mean.1, SD.1, Mean.2, SD.2, round(weights(model), 2))
+      x = model,
+      ilab = cbind(Mean.1, SD.1, Mean.2, SD.2, round(weights(model), 2)),
+      ylim = c(-2.5, model$k + 3)
     )
+    metafor::addpoly(other_model)
 
     text(
       x = forestTemp$ilab.xpos,
@@ -123,7 +129,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
       (forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2]) / 2 ,
       (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2
     ),
-    y = model$k + 3, 
+    y = model$k + 3,
     labels = c(reference, intervention)
   )
   title(glue::glue("Forest plot of studies with overall estimate from {model_effects}-effects model"))
