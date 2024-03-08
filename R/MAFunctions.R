@@ -265,13 +265,14 @@ BayesPairForest <- function(MAdata, model, outcome) {    # inputs: summary MA da
   #prep data#
   MAdata$Study = str_replace_all(MAdata$Study, "_", " ")
   if (model=='fixed') {
-    MAdata <- MAdata[!(MAdata$Study=='RE Model'),]
     MAdata[(MAdata$Study=='FE Model'),1] <- -1
+    MAdata[(MAdata$Study=='RE Model'),1] <- -2
   } else if (model=='random') {
-    MAdata <- MAdata[!(MAdata$Study=='FE Model'),]
     MAdata[(MAdata$Study=='RE Model'),1] <- -1
+    MAdata[(MAdata$Study=='FE Model'),1] <- -2
   }
   scaleFUN <- function(x) sprintf("%.2f", x)   # function to reduce axis labels to 2dp
+  
   # create plot #
   g <- ggplot(aes(est,
                   StudyID.new),
