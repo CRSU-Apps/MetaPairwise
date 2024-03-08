@@ -79,7 +79,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
     forestTemp <- metafor::forest(
       model,
       atransf = exp,
-      ilab = cbind(R.1, N.1 - R.1, R.2, N.2 - R.2, round(weights(model), 2))
+      ilab = cbind(R.2, N.2 - R.2, R.1, N.1 - R.1, round(weights(model), 2))
     )
 
     text(
@@ -92,7 +92,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
     forestTemp <- metafor::forest(
       model,
       atransf = NA,
-      ilab = cbind(R.1, N.1 - R.1, R.2, N.2 - R.2, round(weights(model), 2))
+      ilab = cbind(R.2, N.2 - R.2, R.1, N.1 - R.1, round(weights(model), 2))
     )
 
     text(
@@ -105,7 +105,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
     forestTemp <- metafor::forest(
       model,
       atransf = NA,
-      ilab = cbind(Mean.1, SD.1, Mean.2, SD.2, round(weights(model), 2))
+      ilab = cbind(Mean.2, SD.2, Mean.1, SD.1, round(weights(model), 2))
     )
 
     text(
@@ -124,7 +124,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
       (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2
     ),
     y = model$k + 3, 
-    labels = c(intervention, reference)
+    labels = c(reference, intervention)
   )
   title(glue::glue("Forest plot of studies with overall estimate from {model_effects}-effects model"))
   
