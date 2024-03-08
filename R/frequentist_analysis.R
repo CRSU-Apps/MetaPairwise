@@ -81,7 +81,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
     forestTemp <- metafor::forest(
       x = model,
       atransf = exp,
-      ilab = cbind(R.1, N.1 - R.1, R.2, N.2 - R.2, round(weights(model), 2)),
+      ilab = cbind(R.2, N.2 - R.2, R.1, N.1 - R.1, round(weights(model), 2)),
       ylim = c(-2.5, model$k + 3)
     )
     metafor::addpoly(other_model)
@@ -95,7 +95,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
   } else if (outcome_measure == "RD") {
     forestTemp <- metafor::forest(
       x = model,
-      ilab = cbind(R.1, N.1 - R.1, R.2, N.2 - R.2, round(weights(model), 2)),
+      ilab = cbind(R.2, N.2 - R.2, R.1, N.1 - R.1, round(weights(model), 2)),
       ylim = c(-2.5, model$k + 3)
     )
     metafor::addpoly(other_model)
@@ -109,7 +109,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
   } else if (outcome_measure == "MD" || outcome_measure == "SMD") {
     forestTemp <- metafor::forest(
       x = model,
-      ilab = cbind(Mean.1, SD.1, Mean.2, SD.2, round(weights(model), 2)),
+      ilab = cbind(Mean.2, SD.2, Mean.1, SD.1, round(weights(model), 2)),
       ylim = c(-2.5, model$k + 3)
     )
     metafor::addpoly(other_model)
