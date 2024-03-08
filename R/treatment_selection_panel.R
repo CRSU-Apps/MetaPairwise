@@ -3,8 +3,8 @@ treatment_selection_panel_ui <- function(id) {
   div(
     style = "display: flex; justify-content: space-between; margin: 0 15px",
     selectInput(
-      inputId = ns("reference"),
-      label = "Select Reference",
+      inputId = ns("intervention"),
+      label = "Select Intervention",
       choices = NULL,
       selectize = FALSE
     ),
@@ -17,8 +17,8 @@ treatment_selection_panel_ui <- function(id) {
       )
     ),
     selectInput(
-      inputId = ns("intervention"),
-      label = "Select Intervention",
+      inputId = ns("reference"),
+      label = "Select Reference",
       choices = NULL,
       selectize = FALSE
     )

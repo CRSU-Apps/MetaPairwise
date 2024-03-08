@@ -124,7 +124,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
       (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2
     ),
     y = model$k + 3, 
-    labels = c(reference, intervention)
+    labels = c(intervention, reference)
   )
   title(glue::glue("Forest plot of studies with overall estimate from {model_effects}-effects model"))
   
