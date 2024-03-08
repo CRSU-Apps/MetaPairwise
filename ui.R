@@ -4,7 +4,14 @@ shinyUI(
     tags$head(
       includeCSS("www/app.css"),
       rintrojs::introjsUI(),
-      shinyjs::useShinyjs()
+      shinyjs::useShinyjs(),
+      
+      includeHTML("www/favicon/favicon.html"),
+      tags$meta(name="description", content="A interactive web tool for pairwise meta-analysis that leverages established analysis routines"),
+      tags$meta(name="keywords", content="MetaPairwise, Pairwise, Meta, Analysis, App"),
+      tags$meta(property="og:title", content="Meta Pairwise"),
+      tags$meta(property="og:description", content="An interactive web tool for pairwise meta-analysis that leverages established analysis routines"),
+      tags$meta(property="og:image", content="https://raw.githubusercontent.com/CRSU-Apps/MetaPairwise/main/www/images/MetaPairwiseLogo.png")
     ),
     navbarPage(
       id = "MetaPairwise",

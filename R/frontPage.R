@@ -11,19 +11,28 @@ frontPageUI <- function(id) {
     ),
     br(),
     fluidRow(
-      h4("About"),
-      p("This app allows researchers to conduct pairwise meta-analysis for binary and continuous outcome data without the need for programming knowledge."),
-      br(),
-      p("The app contains two main sections:"),
-      p(strong("Data"), " - Upload your data or use an example dataset."),
-      p(
-        strong("Calculator"), " - Meta-analyse the dataset in a frequentist or bayesian framework, generate statistical results and display downloadable figures."
+      column(
+        width = 4,
+        style = "display: flex;",
+        img(
+          src = "images/MetaPairwiseLogo.png",
+          style = "vertical-align: middle; width: -webkit-fill-available; max-height: 300px; max-width: 300px; margin: auto;"
+        )
       ),
-      br(),
-      h4("Authors"),
-      p("Will Robinson, Clareece Nevill, Janion Nevill, Nicola Cooper, Alex Sutton"),
-      br(),
-      
+      column(
+        width = 8,
+        h4("About"),
+        p("This app allows researchers to conduct pairwise meta-analysis for binary and continuous outcome data without the need for programming knowledge."),
+        br(),
+        p("The app contains two main sections:"),
+        p(strong("Data"), " - Upload your data or use an example dataset."),
+        p(
+          strong("Calculator"), " - Meta-analyse the dataset in a frequentist or bayesian framework, generate statistical results and display downloadable figures."
+        ),
+        br(),
+        h4("Authors"),
+        p("Will Robinson, Clareece Nevill, Janion Nevill, Nicola Cooper, Alex Sutton"),
+      ),
       h4("Extra"),
       p(
         "The code for MetaPairwise is open-source and available on the ",
