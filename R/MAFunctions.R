@@ -31,22 +31,17 @@ Wide2Long <- function(data) { #inputs: data frame
   }
 }
 
-### Swapping treatment and control as neccessary when in wide format ###
+### Swapping treatment and control as necessary when in wide format ###
 SwapTrt <- function(CONBI, data, trt) { # inputs: continuous/binary; data frame; intended primary treatment 
-  if (CONBI=='continuous') {  # different variables need swapping
+  if (CONBI == 'continuous') {  # different variables need swapping
     list_vars <- c("T", "N", "Mean", "SD")
   } else {
     list_vars <- c("T", "N", "R")
   }
   for (i in 1:nrow(data)) {   # need to check for each study
-    if (data$T.1[i]!=trt) {   # if the study data needs swapping
-      for(j in 1:length(list_vars)) {     # complete the swaps for each variable
-        vars <- list(varname = as.name(list_vars[[j]]))
-        eval(parse(text = paste0("data$",vars,".3 <- NA"))) # initialise
-        eval(parse(text = paste0("data$",vars,".3[i] <- data$",vars,".2[i]")))
-        eval(parse(text = paste0("data$",vars,".2[i] <- data$",vars,".1[i]")))
-        eval(parse(text = paste0("data$",vars,".1[i] <- data$",vars,".3[i]")))
-        eval(parse(text = paste0("data <- subset(data, select=-",vars,".3)")))
+    if (data$T.1[i] != trt) {   # if the study data needs swapping
+      for(var in list_vars) {     # complete the swaps for each variable
+        data[i, paste0(var, ".", 1:2)] <- data[i, paste0(var, ".", 2:1)]
       }
     }
   }

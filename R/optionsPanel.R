@@ -1,33 +1,90 @@
 optionsPanelUI <- function(id) {
-  ns=NS(id)
-  div(h4("Synthesis Options"),
-               
-               fluidRow(column(6,selectInput(inputId = ns("Pair_Trt"), label = "Select Treatment", choices = NULL)
-               ),
-               column(6,selectInput(inputId = ns("Pair_Ctrl"), label = "Select Comparator", choices = NULL)
-               )
-               ),
-               radioButtons(ns("FixRand"), "Model selection:", c("Fixed-effects model (FE)" = "fixed", "Random-effects model (RE)" = "random")
-               ),
-               conditionalPanel(condition = "output.ContBin=='continuous'",
-                                radioButtons(ns("OutcomeCont"), "Outcome for continuous data:", c("Mean Difference (MD)" = "MD","Standardised Mean Difference (SMD)" = "SMD")
-                                )
-               ),
-               conditionalPanel(condition = "output.ContBin=='binary'",
-                                radioButtons(ns("OutcomeBina"), "Outcome for binary data:", c("Odds Ratio (OR)" = "OR","Risk Ratio (RR)" = "RR", "Risk Difference (RD)" = "RD")
-                                )
-               ),
-               conditionalPanel(condition= "input.AnalysisType=='Bayesian Analysis'",
-                                h5("Bayesian Options"),
-                                fluidRow(column(6, radioButtons(ns("prior"), "Vague prior for between study standard deviation:", c("Half-Cauchy(0,0.5)" = "half-cauchy", "Uniform(0,2)" = "uniform", "Half-Normal(0,1)" = "half-normal")),
-                                                actionButton(ns("bayes_help"), "Help", class="btn-xs", style="position: absolute; left: 0; top: 220px")
-                                ),
-                                column(6, numericInput(ns("chains"), "Number of chains:", value=2, min=1),
-                                       numericInput(ns("iter"), "Number of iterations:", value=4000, min=1),
-                                       numericInput(ns("burn"), "Burn-in:", value=400, min=1)
-                                )
-                                )
-               )
+  ns = NS(id)
+  div(
+    h4("Synthesis Options"),
+    treatment_selection_panel_ui(id = ns("treatment_selection")),
+    radioButtons(
+      inputId = ns("FixRand"),
+      label = "Model selection:",
+      choices = c(
+        "Fixed-effects model (FE)" = "fixed",
+        "Random-effects model (RE)" = "random"
+      )
+    ),
+    # Intentionally not namespaced in order to capture values from global environment.
+    # This is not the right way to do this. It should be fixed in future
+    conditionalPanel(
+      condition = "output.ContBin == 'continuous'",
+      radioButtons(
+        inputId = ns("OutcomeCont"),
+        label = "Outcome for continuous data:",
+        choices = c(
+          "Mean Difference (MD)" = "MD",
+          "Standardised Mean Difference (SMD)" = "SMD"
+        )
+      )
+    ),
+    # Intentionally not namespaced in order to capture values from global environment.
+    # This is not the right way to do this. It should be fixed in future
+    conditionalPanel(
+      condition = "output.ContBin == 'binary'",
+      radioButtons(
+        inputId = ns("OutcomeBina"),
+        label = "Outcome for binary data:",
+        choices = c(
+          "Odds Ratio (OR)" = "OR",
+          "Risk Ratio (RR)" = "RR",
+          "Risk Difference (RD)" = "RD"
+        )
+      )
+    ),
+    # Intentionally not namespaced in order to capture values from global environment.
+    # This is not the right way to do this. It should be fixed in future
+    conditionalPanel(
+      condition= "input.AnalysisType == 'Bayesian Analysis'",
+      h5("Bayesian Options"),
+      fluidRow(
+        column(
+          width = 6,
+          radioButtons(
+            inputId = ns("prior"),
+            label = "Vague prior for between study standard deviation:",
+            choices = c(
+              "Half-Cauchy(0,0.5)" = "half-cauchy",
+              "Uniform(0,2)" = "uniform",
+              "Half-Normal(0,1)" = "half-normal"
+            )
+          ),
+          actionButton(
+            inputId = ns("bayes_help"),
+            label = "Help",
+            class = "btn-xs",
+            style = "position: absolute; left: 0; top: 220px"
+          )
+        ),
+        column(
+          width = 6,
+          numericInput(
+            inputId = ns("chains"),
+            label = "Number of chains:",
+            value = 2,
+            min = 1
+          ),
+          numericInput(
+            inputId = ns("iter"),
+            label = "Number of iterations:",
+            value = 4000,
+            min = 1
+          ),
+          numericInput(
+            inputId = ns("burn"),
+            label = "Burn-in:",
+            value = 400,
+            min = 1
+          )
+        )
+      )
+    )
   )
 }
 
@@ -36,27 +93,7 @@ optionsPanelServer <- function(id, data) {
     id,
     function(input, output, session) {
       
-      ns <- session$ns
-      
-      pairwise_ref <- function(trt_ctrl) {   # pairwise options
-        if (trt_ctrl=='trt') {
-          ref <- reactive({
-              return(data()$levels[1])
-          })
-        } else {
-          ref <- reactive({
-              return(data()$levels[2])
-          })
-        }
-        return(ref())
-      }
-      
-      observe({
-        updateSelectInput(session=session, inputId = "Pair_Trt", choices = data()$levels, selected = pairwise_ref(trt_ctrl='trt'))
-      })
-      observe({
-        updateSelectInput(session=session, inputId = "Pair_Ctrl", choices = data()$levels, selected = pairwise_ref(trt_ctrl='ctrl'))
-      })
+      treatment_reactives <- treatment_selection_panel_server(id = "treatment_selection", data = data)
       
       # Interactive help boxes #
       
@@ -86,19 +123,19 @@ optionsPanelServer <- function(id, data) {
         }
       )
       
-      return(list(Pair_ctrl=reactive({ input$Pair_Ctrl }),
-                  Pair_trt=reactive({ input$Pair_Trt }),
-                  FixRand=reactive({ input$FixRand }),
-                  OutcomeCont=reactive({ input$OutcomeCont }),
-                  OutcomeBina=reactive({ input$OutcomeBina }),
-                  prior=reactive({ input$prior }),
-                  chains=reactive({ input$chains }),
-                  iter=reactive({ input$iter }),
-                  burn=reactive({ input$burn})
-                  ))
-      
-      
-      
+      return(
+        list(
+          Pair_ctrl = treatment_reactives$reference,
+          Pair_trt = treatment_reactives$intervention,
+          FixRand = reactive({ input$FixRand }),
+          OutcomeCont = reactive({ input$OutcomeCont }),
+          OutcomeBina = reactive({ input$OutcomeBina }),
+          prior = reactive({ input$prior }),
+          chains = reactive({ input$chains }),
+          iter = reactive({ input$iter }),
+          burn = reactive({ input$burn})
+        )
+      )
     }
   )
 }

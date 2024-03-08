@@ -151,7 +151,7 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       WideData <- reactive({
         SwapTrt(
           CONBI = ContBin(),
-          data = Long2Wide(data = data()$data),
+          data = Long2Wide(data = data()),
           trt = Pair_trt()
         )
       })

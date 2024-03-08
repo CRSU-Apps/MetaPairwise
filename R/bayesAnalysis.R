@@ -151,7 +151,7 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
         # convert long format to wide if need be (and ensure trt and ctrl are the right way round)
         SwapTrt(
           CONBI = ContBin(),
-          data = Long2Wide(data = data()$data),
+          data = Long2Wide(data = data()),
           trt = Pair_trt()
         )
       })

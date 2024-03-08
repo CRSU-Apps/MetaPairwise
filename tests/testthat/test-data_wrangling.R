@@ -218,3 +218,15 @@ test_that("WrangleUploadData() wrangles binary wide data to be usable in the res
   expect_equal(wrangled_data[, colnames(wrangled_data) != "StudyID"],
                data)
 })
+
+test_that("FindTreatmentsForStudy() should find treatments for study", {
+  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_wide.csv"))
+  
+  wrangled_data <- WrangleUploadData(data)
+  
+  expect_equal(
+    FindTreatmentsForStudy(wrangled_data, "Berg 2015"),
+    c("BEVA", "RANI"),
+    label = format_vector_to_string(FindTreatmentsForStudy(wrangled_data, "Berg 2015"))
+  )
+})
