@@ -236,13 +236,13 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
       
       output$tracepair_download <- downloadHandler(
         filename = function() {
-          paste0("PairwiseTrace.", input$tracepair_choice)
+          paste0("trace_plot.", input$tracepair_choice)
         },
         content = function(file) {
           plot <- bayes_trace()
-          if (input$forestpairB_choice == "png") {
+          if (input$tracepair_choice == "png") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "png")
-          } else if (input$forestpairB_choice == "png") {
+          } else if (input$tracepair_choice == "pdf") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "pdf")
           } else {
             stop("Only 'pdf' and 'png' file types are supported")
@@ -256,10 +256,10 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
       
       output$forestpairB_download <- downloadHandler(
         filename = function() {
-          paste0("PairwiseAnalysis.", input$forestpairB_choice)
+          paste0("bayesian_forest_plot.", input$forestpairB_choice)
         },
         content = function(file) {
-          plot <- bayes_orest()
+          plot <- bayes_forest()
           if (input$forestpairB_choice == "png") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "png")
           } else if (input$forestpairB_choice == "pdf") {

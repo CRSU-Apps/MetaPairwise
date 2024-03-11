@@ -58,8 +58,7 @@ optionsPanelUI <- function(id) {
           actionButton(
             inputId = ns("bayes_help"),
             label = "Help",
-            class = "btn-xs",
-            style = "position: absolute; left: 0; top: 220px"
+            class = "btn-xs"
           )
         ),
         column(

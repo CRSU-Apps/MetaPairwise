@@ -201,7 +201,7 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       
       output$forestpairF_download <- downloadHandler(
         filename = function() {
-          paste0("forest_plot.", input$forestpairF_choice)
+          paste0("frequentist_forest_plot.", input$forestpairF_choice)
         },
         content = function(file) {
           if (input$forestpairF_choice == 'pdf') {
