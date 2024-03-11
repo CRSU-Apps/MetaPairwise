@@ -89,7 +89,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
     text(
       x = forestTemp$ilab.xpos,
       y = model$k + 2,
-      labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights(%)"),
+      labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights\n(%)"),
       font = 2
     )
   } else if (outcome_measure == "RD") {
@@ -103,7 +103,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
     text(
       x = forestTemp$ilab.xpos,
       y = model$k + 2,
-      labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights(%)"),
+      labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights\n(%)"),
       font = 2
     )
   } else if (outcome_measure == "MD" || outcome_measure == "SMD") {
@@ -117,7 +117,7 @@ CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, mod
     text(
       x = forestTemp$ilab.xpos,
       y = model$k + 2,
-      labels = c("Mean", "SD", "Mean", "SD","Weights(%)"),
+      labels = c("Mean", "SD", "Mean", "SD","Weights\n(%)"),
       font = 2
     )
   } else {

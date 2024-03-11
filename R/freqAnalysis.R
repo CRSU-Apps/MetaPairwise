@@ -46,14 +46,13 @@ freqAnalysisUI <- function(id) {
         align = 'center'
       ),
       fluidRow(
-        column(
-          width = 10,
-          withSpinner(
-            plotOutput(outputId = ns("ForestPlotPairF"))
-          )
-        ),
-        column(
-          width = 2,
+        withSpinner(
+          plotOutput(outputId = ns("ForestPlotPairF"))
+        )
+      ),
+      fluidRow(
+        align = 'center',
+        div(
           radioButtons(
             inputId = ns('forestpairF_choice'),
             label = "Download forest plot as:",
@@ -70,28 +69,27 @@ freqAnalysisUI <- function(id) {
         condition = "output.labbe_available",
         ns = ns,
         fluidRow(
-          column(
-            width = 10,
-            withSpinner(
-              plotOutput(outputId = ns("LabbePlotPairF"))
-            )
-          ),
-          column(
-            width = 2,
-            radioButtons(
-              inputId = ns('labbepairF_choice'),
-              label = "Download L'abbé plot as:",
-              choices = c('pdf','png')
-            ),
-            downloadButton(
-              outputId = ns('labbepairF_download'),
-              label = "Download L'abbé plot"
-            )
+          withSpinner(
+            plotOutput(outputId = ns("LabbePlotPairF"))
           )
-        )
       ),
       fluidRow(
-        align = 'center',
+        align = "center",
+        div(
+          radioButtons(
+            inputId = ns('labbepairF_choice'),
+            label = "Download L'abbé plot as:",
+            choices = c('pdf','png')
+          ),
+          downloadButton(
+            outputId = ns('labbepairF_download'),
+            label = "Download L'abbé plot"
+          )
+        )
+      )
+    ),
+      fluidRow(
+        align = "center",
         downloadButton(
           outputId = ns("FreqReport"),
           label = "Generate and Download Analysis Report"

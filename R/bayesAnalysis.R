@@ -49,15 +49,13 @@ bayesAnalysisUI <- function(id) {
       ),
       h3("Trace Plot"),
       fluidRow(
-        column(
-          width = 10,
-          withSpinner(
-            plotOutput(outputId = ns("TracePlot"))
-          )
-        ),
-        # Trace plot
-        column(
-          width = 2,
+        withSpinner(
+          plotOutput(outputId = ns("TracePlot"))
+        )
+      ),
+      fluidRow(
+        align = "center",
+        div(
           radioButtons(
             inputId = ns("tracepair_choice"),
             label = "Download trace plot as:",
@@ -71,15 +69,13 @@ bayesAnalysisUI <- function(id) {
       ),
       h3("Forest plot"),
       fluidRow(
-        column(
-          width = 10,
-          withSpinner(
-            plotOutput(outputId = ns("ForestPlotPairB"))
-          ),
-          # Forest plot)
-        ),                            
-        column(
-          width = 2,
+        withSpinner(
+          plotOutput(outputId = ns("ForestPlotPairB"))
+        )
+      ),
+      fluidRow(
+        align = "center",
+        div(
           radioButtons(
             inputId = ns("forestpairB_choice"),
             label = "Download forest plot as:",
