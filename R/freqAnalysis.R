@@ -72,24 +72,26 @@ freqAnalysisUI <- function(id) {
           withSpinner(
             plotOutput(outputId = ns("LabbePlotPairF"))
           )
-      ),
-      fluidRow(
-        align = "center",
-        div(
-          radioButtons(
-            inputId = ns('labbepairF_choice'),
-            label = "Download L'abbé plot as:",
-            choices = c('pdf','png')
-          ),
-          downloadButton(
-            outputId = ns('labbepairF_download'),
-            label = "Download L'abbé plot"
+        ),
+        fluidRow(
+          align = "center",
+          div(
+            radioButtons(
+              inputId = ns('labbepairF_choice'),
+              label = "Download L'abbé plot as:",
+              choices = c('pdf','png')
+            ),
+            downloadButton(
+              outputId = ns('labbepairF_download'),
+              label = "Download L'abbé plot"
+            )
           )
         )
-      )
-    ),
+      ),
+      hr(),
       fluidRow(
         align = "center",
+        style = "margin-bottom: 16pt;",
         downloadButton(
           outputId = ns("FreqReport"),
           label = "Generate and Download Analysis Report"
