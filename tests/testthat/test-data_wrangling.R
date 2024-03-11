@@ -220,7 +220,7 @@ test_that("WrangleUploadData() wrangles binary wide data to be usable in the res
 })
 
 test_that("FindTreatmentsForStudy() should find treatments for study", {
-  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_wide.csv"))
+  data <- CleanData(read.csv("data/AntiVEGF_Binary_Pairwise_Wide.csv"))
   
   wrangled_data <- WrangleUploadData(data)
   
