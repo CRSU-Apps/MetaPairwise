@@ -66,73 +66,75 @@ PairwiseModelFit_functionF <- function(model) {
 #' @param outcome_measure Outcome measure being analysed. One of: "OR", "RR", "RD", "MD", "SMD".
 #'
 #' @return Forest plot from meta-analysis.
-CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, model_effects, outcome_measure) {
-  if (model_effects == "fixed") {
-    model <- meta_analysis$MA.Fixed
-    other_model <- meta_analysis$MA.Random
-  } else if (model_effects == "random") {
-    model <- meta_analysis$MA.Random
-    other_model <- meta_analysis$MA.Fixed
-  } else {
-    stop("Model effects must be 'fixed' or 'random'")
+MetaCreatePairwiseForestPlot <- shinymeta::metaAction({
+  CreatePairwiseForestPlot <- function(reference, intervention, meta_analysis, model_effects, outcome_measure) {
+    if (model_effects == "fixed") {
+      model <- meta_analysis$MA.Fixed
+      other_model <- meta_analysis$MA.Random
+    } else if (model_effects == "random") {
+      model <- meta_analysis$MA.Random
+      other_model <- meta_analysis$MA.Fixed
+    } else {
+      stop("Model effects must be 'fixed' or 'random'")
+    }
+    
+    if (outcome_measure == "OR" || outcome_measure == "RR") {
+      forestTemp <- metafor::forest(
+        x = model,
+        atransf = exp,
+        ilab = cbind(R.2, N.2 - R.2, R.1, N.1 - R.1, round(weights(model), 2)),
+        ylim = c(-2.5, model$k + 3)
+      )
+      metafor::addpoly(other_model)
+  
+      text(
+        x = forestTemp$ilab.xpos,
+        y = model$k + 2,
+        labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights\n(%)"),
+        font = 2
+      )
+    } else if (outcome_measure == "RD") {
+      forestTemp <- metafor::forest(
+        x = model,
+        ilab = cbind(R.2, N.2 - R.2, R.1, N.1 - R.1, round(weights(model), 2)),
+        ylim = c(-2.5, model$k + 3)
+      )
+      metafor::addpoly(other_model)
+  
+      text(
+        x = forestTemp$ilab.xpos,
+        y = model$k + 2,
+        labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights\n(%)"),
+        font = 2
+      )
+    } else if (outcome_measure == "MD" || outcome_measure == "SMD") {
+      forestTemp <- metafor::forest(
+        x = model,
+        ilab = cbind(Mean.2, SD.2, Mean.1, SD.1, round(weights(model), 2)),
+        ylim = c(-2.5, model$k + 3)
+      )
+      metafor::addpoly(other_model)
+  
+      text(
+        x = forestTemp$ilab.xpos,
+        y = model$k + 2,
+        labels = c("Mean", "SD", "Mean", "SD","Weights\n(%)"),
+        font = 2
+      )
+    } else {
+      stop("Outcome measure must be one of: 'OR', 'RR', 'RD', 'MD' OR 'SMD'")
+    }
+    
+    text(
+      x = c(
+        (forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2]) / 2 ,
+        (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2
+      ),
+      y = model$k + 3,
+      labels = c(reference, intervention)
+    )
+    title(glue::glue("Forest plot of studies with overall estimate from {model_effects}-effects model"))
+    
+    return(forestTemp)
   }
-  
-  if (outcome_measure == "OR" || outcome_measure == "RR") {
-    forestTemp <- metafor::forest(
-      x = model,
-      atransf = exp,
-      ilab = cbind(R.2, N.2 - R.2, R.1, N.1 - R.1, round(weights(model), 2)),
-      ylim = c(-2.5, model$k + 3)
-    )
-    metafor::addpoly(other_model)
-
-    text(
-      x = forestTemp$ilab.xpos,
-      y = model$k + 2,
-      labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights\n(%)"),
-      font = 2
-    )
-  } else if (outcome_measure == "RD") {
-    forestTemp <- metafor::forest(
-      x = model,
-      ilab = cbind(R.2, N.2 - R.2, R.1, N.1 - R.1, round(weights(model), 2)),
-      ylim = c(-2.5, model$k + 3)
-    )
-    metafor::addpoly(other_model)
-
-    text(
-      x = forestTemp$ilab.xpos,
-      y = model$k + 2,
-      labels = c("Pos+", "Neg-", "Pos+", "Neg-","Weights\n(%)"),
-      font = 2
-    )
-  } else if (outcome_measure == "MD" || outcome_measure == "SMD") {
-    forestTemp <- metafor::forest(
-      x = model,
-      ilab = cbind(Mean.2, SD.2, Mean.1, SD.1, round(weights(model), 2)),
-      ylim = c(-2.5, model$k + 3)
-    )
-    metafor::addpoly(other_model)
-
-    text(
-      x = forestTemp$ilab.xpos,
-      y = model$k + 2,
-      labels = c("Mean", "SD", "Mean", "SD","Weights\n(%)"),
-      font = 2
-    )
-  } else {
-    stop("Outcome measure must be one of: 'OR', 'RR', 'RD', 'MD' OR 'SMD'")
-  }
-  
-  text(
-    x = c(
-      (forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2]) / 2 ,
-      (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2
-    ),
-    y = model$k + 3,
-    labels = c(reference, intervention)
-  )
-  title(glue::glue("Forest plot of studies with overall estimate from {model_effects}-effects model"))
-  
-  return(forestTemp)
-}
+})

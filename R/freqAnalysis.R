@@ -52,15 +52,25 @@ freqAnalysisUI <- function(id) {
       ),
       fluidRow(
         align = 'center',
-        div(
-          radioButtons(
-            inputId = ns('forestpairF_choice'),
-            label = "Download forest plot as:",
-            choices = c('pdf','png')
-          ),
+        column(
+          width = 6,
+          div(
+            radioButtons(
+              inputId = ns('forestpairF_choice'),
+              label = "Download forest plot as:",
+              choices = c('pdf','png')
+            ),
+            downloadButton(
+              outputId = ns('forestpairF_download'),
+              label = "Download forest plot"
+            )
+          )
+        ),
+        column(
+          width = 6,
           downloadButton(
-            outputId = ns('forestpairF_download'),
-            label = "Download forest plot"
+            outputId = ns('forest_script_download'),
+            label = "Download forest plot script"
           )
         )
       ),
@@ -148,27 +158,42 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       #-----------------------------#
       
       # convert long format to wide if need be (and ensure trt and ctrl are the right way round)
-      WideData <- reactive({
+      WideData <- shinymeta::metaReactive({
         SwapTrt(
-          CONBI = ContBin(),
-          data = Long2Wide(data = data()),
-          trt = Pair_trt()
+          CONBI = shinymeta::..(ContBin()),
+          data = Long2Wide(data = shinymeta::..(data())),
+          trt = shinymeta::..(Pair_trt())
         )
       })
       
-      freqpair <- eventReactive(
-        input$FreqRun,
-        {
-          return(
+      # freqpair <- eventReactive(
+      #   input$FreqRun,
+      #   {
+      #     return(
+      #       FreqPair(
+      #         data = WideData(),
+      #         outcome = outcome(),
+      #         model = 'both',
+      #         CONBI = ContBin()
+      #       )
+      #     )
+      #   }
+      # )
+      
+      # This is the `shinymeta` equivalent to `shiny::eventReactive({})`
+      freqpair <- shinymeta::metaReactive2({
+        req(input$FreqRun)
+        isolate(
+          shinymeta::metaExpr({
             FreqPair(
-              data = WideData(),
-              outcome = outcome(),
+              data = shinymeta::..(WideData()),
+              outcome = shinymeta::..(outcome()),
               model = 'both',
-              CONBI = ContBin()
+              CONBI = shinymeta::..(ContBin())
             )
-          )
-        }
-      )
+          })
+        )
+      })
       
       output$SummaryTableF <- renderUI({
         if (FixRand() == "fixed") {
@@ -186,15 +211,18 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         }
       })
       
-      output$ForestPlotPairF <- renderPlot({
-        CreatePairwiseForestPlot(
-          reference = Pair_ctrl(),
-          intervention = Pair_trt(),
-          meta_analysis = freqpair(),
-          model_effects = FixRand(),
-          outcome_measure = outcome()
-        )
-      })
+      output$ForestPlotPairF <- shinymeta::metaRender(
+        renderFunc = renderPlot,
+        expr = {
+          CreatePairwiseForestPlot(
+            reference = shinymeta::..(Pair_ctrl()),
+            intervention = shinymeta::..(Pair_trt()),
+            meta_analysis = shinymeta::..(freqpair()),
+            model_effects = shinymeta::..(FixRand()),
+            outcome_measure = shinymeta::..(outcome())
+          )
+        }
+      )
       
       
       ## Forest Plot Download ##
@@ -223,6 +251,72 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           dev.off()
         }
       )
+      
+      
+      
+      
+      
+      
+      output$forest_script_download <- downloadHandler(
+        filename = "frequentist_forest_plot.zip",
+        content = function(file) {
+          # Generate temporary directory name
+          zip_dir <- file.path(tempfile(), "frequentist_forest_plot")
+          zip_r_dir <- file.path(zip_dir, "R")
+          
+          # Create temporary directories
+          dir.create(zip_r_dir, recursive = TRUE)
+          
+          # Write data to files
+          filename_main <- file.path(zip_dir, "main.R")
+          readr::write_lines(
+            file = filename_main,
+            shinymeta::expandChain(
+              # Load libraries
+              MetaLoadLibraries(),
+              # Execute functions
+              output$ForestPlotPairF()
+            )
+          )
+          
+          filename_data_functions <- file.path(zip_r_dir, "data_functions.R")
+          readr::write_lines(
+            file = filename_data_functions,
+            shinymeta::expandChain(
+              MetaDataFunctions()
+            )
+          )
+
+          filename_plot_functions <- file.path(zip_r_dir, "plot_functions.R")
+          readr::write_lines(
+            file = filename_plot_functions,
+            shinymeta::expandChain(
+              MetaCreatePairwiseForestPlot()
+            )
+          )
+
+          filename_analysis_functions <- file.path(zip_r_dir, "analysis_functions.R")
+          readr::write_lines(
+            file = filename_analysis_functions,
+            shinymeta::expandChain(
+              MetaFrequentistAnalysis()
+            )
+          )
+          
+          # Create zip file
+          zip::zip(zipfile = file, files = zip_dir, mode = "cherry-pick")
+        }
+      )
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       
       output$labbe_available <- reactive({
         return(ContBin() == "binary")
