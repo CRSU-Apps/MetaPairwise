@@ -19,14 +19,14 @@ function(input, output, session) {
   
   filtered_data <- shinymeta::metaReactive({
     raw_data <- shinymeta::..(data())$data
-    # Gather the treatments in each study
+    "# Gather the treatments in each study"
     study_treatments <- sapply(
       unique(raw_data$Study),
       function(study) {
         return(FindTreatmentsForStudy(raw_data, study))
       }
     )
-    # Filter out any studies which don't compare the 2 treatments of interest
+    "# Filter out any studies which don't compare the 2 treatments of interest"
     rows <- sapply(
       raw_data$Study,
       function(study) {
@@ -37,10 +37,11 @@ function(input, output, session) {
     return(raw_data[rows, ])
   })
   
-  ContBin <- reactive({           # automatically detect if continuous or binary
-    if (max(grepl("^Mean", names(filtered_data())))) {
+  ContBin <- shinymeta::metaReactive({
+    "# automatically detect if continuous or binary"
+    if (max(grepl("^Mean", names(shinymeta::..(filtered_data()))))) {
       return('continuous')
-    } else if (max(grepl("^R", names(filtered_data())))) {
+    } else if (max(grepl("^R", names(shinymeta::..(filtered_data()))))) {
       return ('binary')
     } else {
       stop("Cannot identify data type from column names")
@@ -50,11 +51,12 @@ function(input, output, session) {
   output$ContBin <- ContBin
   outputOptions(output, "ContBin", suspendWhenHidden = FALSE) #needed for UI options, but doesn't need displaying itself
   
-  outcome <- reactive({                  # different outcome variables if continuous or binary
-    if (ContBin() == 'continuous') {
-      OutcomeCont()
-    } else if (ContBin() == 'binary') {
-      OutcomeBina()
+  outcome <- shinymeta::metaReactive({
+    "# different outcome variables if continuous or binary"
+    if (shinymeta::..(ContBin()) == 'continuous') {
+      shinymeta::..(OutcomeCont())
+    } else if (shinymeta::..(ContBin()) == 'binary') {
+      shinymeta::..(OutcomeBina())
     } else {
       stop("Data type should be 'continuous' or 'binary'")
     }

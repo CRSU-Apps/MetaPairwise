@@ -1,4 +1,14 @@
 
+meta_data_definitions <- list(
+  file_name = "data_definitions.R",
+  directory = "R",
+  meta_action = shinymeta::expandChain(MetaDataDefinitions())
+)
+meta_data_sorting_functions <- list(
+  file_name = "data_sorting_functions.R",
+  directory = "R",
+  meta_action = shinymeta::expandChain(MetaDataSortingFunctions())
+)
 meta_data_wrangling_functions <- list(
   file_name = "data_wrangling_functions.R",
   directory = "R",

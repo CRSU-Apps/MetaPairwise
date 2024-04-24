@@ -245,6 +245,8 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
             zip_file_name = file,
             script_directory_name = "frequentist_forest_plot",
             prerequisite_definitions = list(
+              meta_data_definitions,
+              meta_data_sorting_functions,
               meta_data_wrangling_functions,
               meta_freq_analysis_functions,
               meta_freq_forest_plot_functions
