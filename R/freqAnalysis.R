@@ -166,20 +166,6 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         )
       })
       
-      # freqpair <- eventReactive(
-      #   input$FreqRun,
-      #   {
-      #     return(
-      #       FreqPair(
-      #         data = WideData(),
-      #         outcome = outcome(),
-      #         model = 'both',
-      #         CONBI = ContBin()
-      #       )
-      #     )
-      #   }
-      # )
-      
       # This is the `shinymeta` equivalent to `shiny::eventReactive({})`
       freqpair <- shinymeta::metaReactive2({
         req(input$FreqRun)
@@ -252,71 +238,26 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         }
       )
       
-      
-      
-      
-      
-      
       output$forest_script_download <- downloadHandler(
         filename = "frequentist_forest_plot.zip",
         content = function(file) {
-          # Generate temporary directory name
-          zip_dir <- file.path(tempfile(), "frequentist_forest_plot")
-          zip_r_dir <- file.path(zip_dir, "R")
-          
-          # Create temporary directories
-          dir.create(zip_r_dir, recursive = TRUE)
-          
-          # Write data to files
-          filename_main <- file.path(zip_dir, "main.R")
-          readr::write_lines(
-            file = filename_main,
-            shinymeta::expandChain(
+          ExportMetaPairwiseScript(
+            zip_file_name = file,
+            script_directory_name = "frequentist_forest_plot",
+            prerequisite_definitions = list(
+              meta_data_wrangling_functions,
+              meta_freq_analysis_functions,
+              meta_freq_forest_plot_functions
+            ),
+            main_content = shinymeta::expandChain(
               # Load libraries
               MetaLoadLibraries(),
               # Execute functions
               output$ForestPlotPairF()
             )
           )
-          
-          filename_data_functions <- file.path(zip_r_dir, "data_functions.R")
-          readr::write_lines(
-            file = filename_data_functions,
-            shinymeta::expandChain(
-              MetaDataFunctions()
-            )
-          )
-
-          filename_plot_functions <- file.path(zip_r_dir, "plot_functions.R")
-          readr::write_lines(
-            file = filename_plot_functions,
-            shinymeta::expandChain(
-              MetaCreatePairwiseForestPlot()
-            )
-          )
-
-          filename_analysis_functions <- file.path(zip_r_dir, "analysis_functions.R")
-          readr::write_lines(
-            file = filename_analysis_functions,
-            shinymeta::expandChain(
-              MetaFrequentistAnalysis()
-            )
-          )
-          
-          # Create zip file
-          zip::zip(zipfile = file, files = zip_dir, mode = "cherry-pick")
         }
       )
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
       
       output$labbe_available <- reactive({
         return(ContBin() == "binary")

@@ -1,61 +1,6 @@
 # Running Meta-Analysis Functions #
 #---------------------------------#
 
-
-# Reshaping #
-#-----------#
-
-MetaDataFunctions <- shinymeta::metaAction({
-  ### Convert long to wide ###
-  Long2Wide <- function(data) { #inputs: data frame
-    TempData <- as.data.frame(data)
-    if (ncol(TempData)==6 | ncol(TempData)==5){ #long format
-      TempData<-TempData[order(TempData$StudyID, TempData$T), ]
-      TempData$Arms<- ave(as.numeric(TempData$StudyID),TempData$StudyID,FUN=seq_along)  # create counting variable for number of arms within each study.
-      data_wide <- reshape(TempData, timevar = "Arms",idvar = c("Study", "StudyID"), direction = "wide") # reshape
-    }
-    else {
-      data_wide<- TempData
-    }
-  }
-  
-  ### Convert wide to long ###
-  Wide2Long <- function(data) { #inputs: data frame
-    TempData <- as.data.frame(data)
-    if (ncol(TempData)==6 | ncol(TempData)==5) {
-      data_long <- TempData
-    } else {                # wide format
-      TempData <- TempData[order(TempData$StudyID), ]
-      data_long <- reshape(TempData, idvar = c("Study", "StudyID"), direction = "long", varying = 3:ncol(TempData))
-      data_long <- data_long[!is.na(data_long$T), ]
-      data_long <- data_long[order(data_long$StudyID, data_long$T), ]
-    }
-  }
-  
-  ### Swapping treatment and control as necessary when in wide format ###
-  SwapTrt <- function(CONBI, data, trt) { # inputs: continuous/binary; data frame; intended primary treatment 
-    if (CONBI == 'continuous') {  # different variables need swapping
-      list_vars <- c("T", "N", "Mean", "SD")
-    } else {
-      list_vars <- c("T", "N", "R")
-    }
-    "# need to check for each study"
-    for (i in 1:nrow(data)) {
-      "# if the study data needs swapping"
-      if (data$T.1[i] != trt) {
-        "# complete the swaps for each variable"
-        for(var in list_vars) {
-          data[i, paste0(var, ".", 1:2)] <- data[i, paste0(var, ".", 2:1)]
-        }
-      }
-    }
-    return(data)   # output is corrected data frame
-  }
-})
-
-## Ensure have StudyIDs and sequential ##
-
-
 # Frequentist #
 #-------------#
 
