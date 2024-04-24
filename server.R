@@ -17,8 +17,8 @@ function(input, output, session) {
   iter <- optionsReactives$iter
   burn <- optionsReactives$burn
   
-  filtered_data <- reactive({
-    raw_data <- data()$data
+  filtered_data <- shinymeta::metaReactive({
+    raw_data <- shinymeta::..(data())$data
     # Gather the treatments in each study
     study_treatments <- sapply(
       unique(raw_data$Study),
@@ -31,7 +31,7 @@ function(input, output, session) {
       raw_data$Study,
       function(study) {
         treatments <- study_treatments[, study]
-        return(Pair_trt() %in% treatments && Pair_ctrl() %in% treatments)
+        return(shinymeta::..(Pair_trt()) %in% treatments && shinymeta::..(Pair_ctrl()) %in% treatments)
       }
     )
     return(raw_data[rows, ])

@@ -2,6 +2,13 @@
 # load libraries
 
 MetaLoadLibraries <- shinymeta::metaAction({
+  # These comments are here to instruct users to input their own data
+  "##############################################################"
+  "# A data file will need to be added to make this script work #"
+  "##############################################################"
+  "# Uncomment the next line ↓ to use your data"
+  "# loaded_data <- function() { rio::import('<YOUR_DATA_FILE_HERE>') }"
+  
   library(dplyr)
   library(forcats)
   library(ggplot2)

@@ -114,16 +114,16 @@ dataPageServer <- function(id) {
       })
       
       # Clean and sort data
-      cleaned_data <- reactive({
+      cleaned_data <- shinymeta::metaReactive({
         cleaned_data <- CleanData(loaded_data())
         # Sort data according to selected criteria
-        cleaned_data <- .data_page_sort_criteria[[input$sort_criteria]](cleaned_data)
+        cleaned_data <- .data_page_sort_criteria[[shinymeta::..(input$sort_criteria)]](cleaned_data)
         
         return(cleaned_data)
       })
       
-      wrangled_data <- reactive({
-        WrangleUploadData(cleaned_data())
+      wrangled_data <- shinymeta::metaReactive({
+        WrangleUploadData(shinymeta::..(cleaned_data()))
       })
       
       # Create a table which displays the raw data just uploaded by the user
@@ -146,10 +146,10 @@ dataPageServer <- function(id) {
       })
       
       return(
-        reactive({
+        shinymeta::metaReactive({
           list(
-            data = wrangled_data(),
-            levels = data_levels()
+            data = shinymeta::..(wrangled_data()),
+            levels = shinymeta::..(data_levels())
           )
         })
       )
