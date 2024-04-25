@@ -1,23 +1,16 @@
 
 #' Create the panel for downloading a reproducible script.
 #'
-#' @param id_base Base of the IDs to create for the library selection and download button.
-#' @param extras_id ID for the library functions radio buttons. Defaults to `glue::glue("{id_base}_extras")`
-#' @param download_id ID for the download button. Defaults to `glue::glue("{id_base}_download")`
+#' @param id ID of this module.
 #' @param script_title Title of the script to be displayed on the download button.
-#' @param ns Namespace function if in a module. Defaults to `identity()` function.
 #'
 #' @return Div containing script download panel.
-CreateScriptDownloadPanel <- function(
-    id_base,
-    extras_id = glue::glue("{id_base}_extras"),
-    download_id = glue::glue("{id_base}_download"),
-    script_title,
-    ns = identity) {
+ScriptDownloadPanel <- function(id, script_title) {
+  ns = NS(id)
   return(
     div(
       radioButtons(
-        inputId = ns(extras_id),
+        inputId = ns("extras"),
         label = div(
           tags$html("Include library functions:", tags$i(class="fa-regular fa-circle-question")),
           title = "How much of the underlying app code to download with the reproducible script"
@@ -39,9 +32,53 @@ CreateScriptDownloadPanel <- function(
         choiceValues = c("none", "required", "all")
       ),
       downloadButton(
-        outputId = ns(download_id),
+        outputId = ns("download"),
         label = glue::glue("Download {script_title} script")
       )
     )
+  )
+}
+
+#' Server for a script download panel.
+#'
+#' @param id ID of this module.
+#' @param output_to_reproduce The shiny output object to be reproduced.
+#' @param script_name Name of the script to be used in file and folder names.
+#' @param required_meta_actions Meta actions required to create a fully reproducible script.
+ScriptDownloadServer <- function(id, output_to_reproduce, script_name, required_meta_actions) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      output$download <- downloadHandler(
+        filename = function() {
+          if (input$extras == "none") {
+            return(glue::glue("{script_name}.R"))
+          } else {
+            return(glue::glue("{script_name}.zip"))
+          }
+        },
+        content = function(file) {
+          if (input$extras == "none") {
+            prerequisites <- list()
+          } else if (input$extras == "required") {
+            prerequisites <- required_meta_actions
+          } else {
+            prerequisites <- all_meta_pairwise_functions
+          }
+          
+          ExportMetaPairwiseScript(
+            output_file_name = file,
+            script_directory_name = "script_name",
+            prerequisite_definitions = prerequisites,
+            main_content = shinymeta::expandChain(
+              # Load libraries
+              MetaLoadLibraries(),
+              # create output
+              output_to_reproduce()
+            )
+          )
+        }
+      )
+    }
   )
 }

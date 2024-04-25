@@ -68,7 +68,7 @@ freqAnalysisUI <- function(id) {
         ),
         column(
           width = 6,
-          CreateScriptDownloadPanel(ns = ns, id_base = "forest_script", script_title = "forest plot")
+          ScriptDownloadPanel(id = ns("forest_script"), script_title = "forest plot")
         )
       ),
       br(),
@@ -235,42 +235,54 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         }
       )
       
-      output$forest_script_download <- downloadHandler(
-        filename = function() {
-          if (input$forest_script_extras == "none") {
-            return("frequentist_forest_plot.R")
-          } else {
-            return("frequentist_forest_plot.zip")
-          }
-        },
-        content = function(file) {
-          if (input$forest_script_extras == "none") {
-            prerequisites <- list()
-          } else if (input$forest_script_extras == "required") {
-            prerequisites <- list(
-              meta_data_definitions,
-              meta_data_sorting_functions,
-              meta_data_wrangling_functions,
-              meta_freq_analysis_functions,
-              meta_freq_forest_plot_functions
-            )
-          } else {
-            prerequisites <- all_meta_pairwise_functions
-          }
-          
-          ExportMetaPairwiseScript(
-            output_file_name = file,
-            script_directory_name = "frequentist_forest_plot",
-            prerequisite_definitions = prerequisites,
-            main_content = shinymeta::expandChain(
-              # Load libraries
-              MetaLoadLibraries(),
-              # Execute functions
-              output$ForestPlotPairF()
-            )
-          )
-        }
+      ScriptDownloadServer(
+        id = "forest_script",
+        output_to_reproduce = output$ForestPlotPairF,
+        script_name = "frequentist_forest_plot",
+        required_meta_actions = list(
+          meta_data_definitions,
+          meta_data_sorting_functions,
+          meta_data_wrangling_functions,
+          meta_freq_analysis_functions,
+          meta_freq_forest_plot_functions
+        )
       )
+      # output$forest_script_download <- downloadHandler(
+      #   filename = function() {
+      #     if (input$forest_script_extras == "none") {
+      #       return("frequentist_forest_plot.R")
+      #     } else {
+      #       return("frequentist_forest_plot.zip")
+      #     }
+      #   },
+      #   content = function(file) {
+      #     if (input$forest_script_extras == "none") {
+      #       prerequisites <- list()
+      #     } else if (input$forest_script_extras == "required") {
+      #       prerequisites <- list(
+      #         meta_data_definitions,
+      #         meta_data_sorting_functions,
+      #         meta_data_wrangling_functions,
+      #         meta_freq_analysis_functions,
+      #         meta_freq_forest_plot_functions
+      #       )
+      #     } else {
+      #       prerequisites <- all_meta_pairwise_functions
+      #     }
+      #     
+      #     ExportMetaPairwiseScript(
+      #       output_file_name = file,
+      #       script_directory_name = "frequentist_forest_plot",
+      #       prerequisite_definitions = prerequisites,
+      #       main_content = shinymeta::expandChain(
+      #         # Load libraries
+      #         MetaLoadLibraries(),
+      #         # Execute functions
+      #         output$ForestPlotPairF()
+      #       )
+      #     )
+      #   }
+      # )
       
       output$labbe_available <- reactive({
         return(ContBin() == "binary")
