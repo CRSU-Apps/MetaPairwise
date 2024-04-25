@@ -29,7 +29,8 @@ ScriptDownloadPanel <- function(id, script_title) {
             title = "Download the script with all background functions used in the app, whether or not they are needed for this script"
           )
         ),
-        choiceValues = c("none", "required", "all")
+        choiceValues = c("none", "required", "all"),
+        selected = "required"
       ),
       downloadButton(
         outputId = ns("download"),
