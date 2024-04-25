@@ -1,28 +1,48 @@
 
+#' Gather and format code to be exported.
+#'
+#' @param meta_action The return from a call to `shinymeta::metaAction()`.
+#' @param expanded_chain The result from a call to `shinymeta::expandChain()`.
+#'
+#' @return Formatted code as text.
+.BuildMetaPairwiseExportCode <- function(meta_action = NULL, expanded_chain = NULL) {
+  if (is.null(meta_action) == is.null(expanded_chain)) {
+    stop("When building code for export, either a meta action, or an expanded chain must be provided, not both")
+  }
+  
+  if (is.null(expanded_chain)) {
+    expanded_chain <- shinymeta::expandChain(meta_action())
+  }
+  
+  expanded_chain %>%
+    deparseCode() %>%
+    formatCode(formatter = function(txt) { styler::style_text(txt) })
+}
+
 meta_data_definitions <- list(
   file_name = "data_definitions.R",
   directory = "R",
-  meta_action = shinymeta::expandChain(MetaDataDefinitions())
+  meta_action = .BuildMetaPairwiseExportCode(MetaDataDefinitions)
 )
 meta_data_sorting_functions <- list(
   file_name = "data_sorting_functions.R",
   directory = "R",
-  meta_action = shinymeta::expandChain(MetaDataSortingFunctions())
+  meta_action = .BuildMetaPairwiseExportCode(MetaDataSortingFunctions)
 )
 meta_data_wrangling_functions <- list(
   file_name = "data_wrangling_functions.R",
   directory = "R",
-  meta_action = shinymeta::expandChain(MetaDataWranglingFunctions())
+  meta_action = .BuildMetaPairwiseExportCode(MetaDataWranglingFunctions)
 )
 meta_freq_forest_plot_functions <- list(
   file_name = "plot_functions.R",
   directory = "R",
-  meta_action = shinymeta::expandChain(MetaCreatePairwiseForestPlot())
+  meta_action = .BuildMetaPairwiseExportCode(MetaCreatePairwiseForestPlot)
 )
 meta_freq_analysis_functions <- list(
-  file_name = "analysis_functions.R",
+  file_name = "frequentist_analysis_functions.R",
   directory = "R",
-  meta_action = shinymeta::expandChain(MetaFrequentistAnalysis())
+  meta_action = .BuildMetaPairwiseExportCode(MetaFrequentistAnalysis)
 )
 
 
@@ -78,7 +98,7 @@ ExportMetaPairwiseScript <- function(zip_file_name, script_directory_name, prere
   # Write main script to file
   readr::write_lines(
     file = file.path(zip_dir, "main.R"),
-    main_content
+    .BuildMetaPairwiseExportCode(expanded_chain = main_content)
   )
   
   # Create zip file
