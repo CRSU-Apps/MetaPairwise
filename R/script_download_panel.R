@@ -69,7 +69,7 @@ ScriptDownloadServer <- function(id, output_to_reproduce, script_name, required_
           
           ExportMetaPairwiseScript(
             output_file_name = file,
-            script_directory_name = "script_name",
+            script_name = script_name,
             prerequisite_definitions = prerequisites,
             main_content = shinymeta::expandChain(
               # Load libraries

@@ -57,7 +57,7 @@ all_meta_pairwise_functions <- list(
 #' Export a reproducible script to a zip file.
 #'
 #' @param output_file_name Name of the zip file to create.
-#' @param script_directory_name Name of the directory within the zip file.
+#' @param script_name Name of the script to be used in file and directory names.
 #' @param prerequisite_definitions Definitions for files to be created in the "R" directory within the zip file.
 #' @param main_content Contents of the "main.R" script created in the zip file.
 #'
@@ -84,7 +84,7 @@ all_meta_pairwise_functions <- list(
 #'     )
 #'   }
 #' )
-ExportMetaPairwiseScript <- function(output_file_name, script_directory_name, prerequisite_definitions, main_content) {
+ExportMetaPairwiseScript <- function(output_file_name, script_name, prerequisite_definitions, main_content) {
   if (length(prerequisite_definitions) == 0) {
     # Write main script to file
     readr::write_lines(
@@ -95,7 +95,7 @@ ExportMetaPairwiseScript <- function(output_file_name, script_directory_name, pr
   }
   
   # Generate temporary directory name
-  tmp_dir <- file.path(tempfile(), script_directory_name)
+  tmp_dir <- file.path(tempfile(), script_name)
   
   # Create temporary directories
   dir.create(tmp_dir, recursive = TRUE)
@@ -114,7 +114,7 @@ ExportMetaPairwiseScript <- function(output_file_name, script_directory_name, pr
   
   # Write main script to file
   readr::write_lines(
-    file = file.path(tmp_dir, "main.R"),
+    file = file.path(tmp_dir, glue::glue("{script_name}.R")),
     .BuildMetaPairwiseExportCode(expanded_chain = main_content)
   )
   
