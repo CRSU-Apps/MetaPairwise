@@ -45,10 +45,18 @@ meta_freq_analysis_functions <- list(
   meta_action = .BuildMetaPairwiseExportCode(MetaFrequentistAnalysis)
 )
 
+all_meta_pairwise_functions <- list(
+  meta_data_definitions,
+  meta_data_sorting_functions,
+  meta_data_wrangling_functions,
+  meta_freq_forest_plot_functions,
+  meta_freq_analysis_functions
+)
+
 
 #' Export a reproducible script to a zip file.
 #'
-#' @param zip_file_name Name of the zip file to create.
+#' @param output_file_name Name of the zip file to create.
 #' @param script_directory_name Name of the directory within the zip file.
 #' @param prerequisite_definitions Definitions for files to be created in the "R" directory within the zip file.
 #' @param main_content Contents of the "main.R" script created in the zip file.
@@ -60,7 +68,7 @@ meta_freq_analysis_functions <- list(
 #'   filename = "frequentist_forest_plot.zip",
 #'   content = function(file) {
 #'     ExportMetaPairwiseScript(
-#'       zip_file_name = file,
+#'       output_file_name = file,
 #'       script_directory_name = "frequentist_forest_plot",
 #'       prerequisite_definitions = list(
 #'         meta_data_functions,
@@ -76,16 +84,25 @@ meta_freq_analysis_functions <- list(
 #'     )
 #'   }
 #' )
-ExportMetaPairwiseScript <- function(zip_file_name, script_directory_name, prerequisite_definitions, main_content) {
+ExportMetaPairwiseScript <- function(output_file_name, script_directory_name, prerequisite_definitions, main_content) {
+  if (length(prerequisite_definitions) == 0) {
+    # Write main script to file
+    readr::write_lines(
+      file = output_file_name,
+      .BuildMetaPairwiseExportCode(expanded_chain = main_content)
+    )
+    return()
+  }
+  
   # Generate temporary directory name
-  zip_dir <- file.path(tempfile(), script_directory_name)
+  tmp_dir <- file.path(tempfile(), script_directory_name)
   
   # Create temporary directories
-  dir.create(zip_dir, recursive = TRUE)
+  dir.create(tmp_dir, recursive = TRUE)
   
   # Write prerequisites to files
   for (definition in prerequisite_definitions) {
-    sub_dir <- file.path(zip_dir, definition$directory)
+    sub_dir <- file.path(tmp_dir, definition$directory)
     if (!dir.exists(sub_dir)) {
       dir.create(sub_dir, recursive = TRUE)
     }
@@ -97,10 +114,10 @@ ExportMetaPairwiseScript <- function(zip_file_name, script_directory_name, prere
   
   # Write main script to file
   readr::write_lines(
-    file = file.path(zip_dir, "main.R"),
+    file = file.path(tmp_dir, "main.R"),
     .BuildMetaPairwiseExportCode(expanded_chain = main_content)
   )
   
   # Create zip file
-  zip::zip(zipfile = zip_file_name, files = zip_dir, mode = "cherry-pick")
+  zip::zip(zipfile = output_file_name, files = tmp_dir, mode = "cherry-pick")
 }
