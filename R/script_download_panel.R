@@ -59,9 +59,6 @@ ScriptDownloadServer <- function(id, output_to_reproduce, script_name, required_
           }
         },
         content = function(file) {
-          
-          browser()
-          
           if (input$extras == "none") {
             prerequisites <- list()
           } else if (input$extras == "required") {

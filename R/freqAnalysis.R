@@ -155,15 +155,12 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       #-----------------------------#
       
       # convert long format to wide if need be (and ensure trt and ctrl are the right way round)
-      WideDataIntermediate <- reactive({
-        SwapTrt(
-          CONBI = ContBin(),
-          data = Long2Wide(data = data()),
-          trt = Pair_trt()
-        )
-      })
       WideData <- shinymeta::metaReactive({
-        shinymeta::..(WideDataIntermediate())
+        SwapTrt(
+          CONBI = shinymeta::..(ContBin()),
+          data = Long2Wide(data = shinymeta::..(data())),
+          trt = shinymeta::..(Pair_trt())
+        )
       })
       
       # This is the `shinymeta` equivalent to `shiny::eventReactive({})`
@@ -243,9 +240,7 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         output_to_reproduce = output$ForestPlotPairF,
         script_name = "frequentist_forest_plot",
         required_meta_actions = list(
-          # meta_data_definitions,
-          # meta_data_sorting_functions,
-          # meta_data_wrangling_functions,
+          meta_data_wrangling_functions,
           meta_freq_analysis_functions,
           meta_freq_forest_plot_functions
         )
