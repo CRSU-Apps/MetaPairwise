@@ -124,11 +124,11 @@ optionsPanelServer <- function(id, data) {
       
       return(
         list(
-          Pair_ctrl = shinymeta::metaReactive({ shinymeta::..(treatment_reactives$reference()) }),
-          Pair_trt = shinymeta::metaReactive({ shinymeta::..(treatment_reactives$intervention()) }),
-          FixRand = shinymeta::metaReactive({ shinymeta::..(input$FixRand) }),
-          OutcomeCont = shinymeta::metaReactive({ shinymeta::..(input$OutcomeCont) }),
-          OutcomeBina = shinymeta::metaReactive({ shinymeta::..(input$OutcomeBina) }),
+          Pair_ctrl = treatment_reactives$reference,
+          Pair_trt = treatment_reactives$intervention,
+          FixRand = reactive({ input$FixRand }),
+          OutcomeCont = reactive({ input$OutcomeCont }),
+          OutcomeBina = reactive({ input$OutcomeBina }),
           prior = reactive({ input$prior }),
           chains = reactive({ input$chains }),
           iter = reactive({ input$iter }),

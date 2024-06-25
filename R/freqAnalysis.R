@@ -155,12 +155,15 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       #-----------------------------#
       
       # convert long format to wide if need be (and ensure trt and ctrl are the right way round)
-      WideData <- shinymeta::metaReactive({
+      WideDataIntermediate <- reactive({
         SwapTrt(
-          CONBI = shinymeta::..(ContBin()),
-          data = Long2Wide(data = shinymeta::..(data())),
-          trt = shinymeta::..(Pair_trt())
+          CONBI = ContBin(),
+          data = Long2Wide(data = data()),
+          trt = Pair_trt()
         )
+      })
+      WideData <- shinymeta::metaReactive({
+        shinymeta::..(WideDataIntermediate())
       })
       
       # This is the `shinymeta` equivalent to `shiny::eventReactive({})`
@@ -240,49 +243,13 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         output_to_reproduce = output$ForestPlotPairF,
         script_name = "frequentist_forest_plot",
         required_meta_actions = list(
-          meta_data_definitions,
-          meta_data_sorting_functions,
-          meta_data_wrangling_functions,
+          # meta_data_definitions,
+          # meta_data_sorting_functions,
+          # meta_data_wrangling_functions,
           meta_freq_analysis_functions,
           meta_freq_forest_plot_functions
         )
       )
-      # output$forest_script_download <- downloadHandler(
-      #   filename = function() {
-      #     if (input$forest_script_extras == "none") {
-      #       return("frequentist_forest_plot.R")
-      #     } else {
-      #       return("frequentist_forest_plot.zip")
-      #     }
-      #   },
-      #   content = function(file) {
-      #     if (input$forest_script_extras == "none") {
-      #       prerequisites <- list()
-      #     } else if (input$forest_script_extras == "required") {
-      #       prerequisites <- list(
-      #         meta_data_definitions,
-      #         meta_data_sorting_functions,
-      #         meta_data_wrangling_functions,
-      #         meta_freq_analysis_functions,
-      #         meta_freq_forest_plot_functions
-      #       )
-      #     } else {
-      #       prerequisites <- all_meta_pairwise_functions
-      #     }
-      #     
-      #     ExportMetaPairwiseScript(
-      #       output_file_name = file,
-      #       script_directory_name = "frequentist_forest_plot",
-      #       prerequisite_definitions = prerequisites,
-      #       main_content = shinymeta::expandChain(
-      #         # Load libraries
-      #         MetaLoadLibraries(),
-      #         # Execute functions
-      #         output$ForestPlotPairF()
-      #       )
-      #     )
-      #   }
-      # )
       
       output$labbe_available <- reactive({
         return(ContBin() == "binary")

@@ -17,8 +17,8 @@ function(input, output, session) {
   iter <- optionsReactives$iter
   burn <- optionsReactives$burn
   
-  filtered_data <- shinymeta::metaReactive({
-    raw_data <- shinymeta::..(data())$data
+  filtered_data <- reactive({
+    raw_data <- data()$data
     "# Gather the treatments in each study"
     study_treatments <- sapply(
       unique(raw_data$Study),
@@ -31,17 +31,17 @@ function(input, output, session) {
       raw_data$Study,
       function(study) {
         treatments <- study_treatments[, study]
-        return(shinymeta::..(Pair_trt()) %in% treatments && shinymeta::..(Pair_ctrl()) %in% treatments)
+        return(Pair_trt() %in% treatments && Pair_ctrl() %in% treatments)
       }
     )
     return(raw_data[rows, ])
   })
   
-  ContBin <- shinymeta::metaReactive({
+  ContBin <- reactive({
     "# automatically detect if continuous or binary"
-    if (max(grepl("^Mean", names(shinymeta::..(filtered_data()))))) {
+    if (max(grepl("^Mean", names(filtered_data())))) {
       return('continuous')
-    } else if (max(grepl("^R", names(shinymeta::..(filtered_data()))))) {
+    } else if (max(grepl("^R", names(filtered_data())))) {
       return ('binary')
     } else {
       stop("Cannot identify data type from column names")
@@ -51,12 +51,12 @@ function(input, output, session) {
   output$ContBin <- ContBin
   outputOptions(output, "ContBin", suspendWhenHidden = FALSE) #needed for UI options, but doesn't need displaying itself
   
-  outcome <- shinymeta::metaReactive({
+  outcome <- reactive({
     "# different outcome variables if continuous or binary"
-    if (shinymeta::..(ContBin()) == 'continuous') {
-      shinymeta::..(OutcomeCont())
-    } else if (shinymeta::..(ContBin()) == 'binary') {
-      shinymeta::..(OutcomeBina())
+    if (ContBin() == 'continuous') {
+      OutcomeCont()
+    } else if (ContBin() == 'binary') {
+      OutcomeBina()
     } else {
       stop("Data type should be 'continuous' or 'binary'")
     }
