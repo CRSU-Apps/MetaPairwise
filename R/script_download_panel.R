@@ -12,7 +12,7 @@ ScriptDownloadPanel <- function(id, script_title) {
       radioButtons(
         inputId = ns("extras"),
         label = div(
-          tags$html("Include library functions:", tags$i(class="fa-regular fa-circle-question")),
+          tags$html("Download script with library functions:", tags$i(class="fa-regular fa-circle-question")),
           title = "How much of the underlying app code to download with the reproducible script"
         ),
         choiceNames = list(
@@ -43,10 +43,11 @@ ScriptDownloadPanel <- function(id, script_title) {
 #' Server for a script download panel.
 #'
 #' @param id ID of this module.
-#' @param output_to_reproduce The shiny output object to be reproduced.
+#' @param output_to_reproduce The shiny output object to be reproduced. This can be a rendered output, or a meta action.
+#' @param post_processing A meta action containing code to be executed after the output.
 #' @param script_name Name of the script to be used in file and folder names.
 #' @param required_meta_actions Meta actions required to create a fully reproducible script.
-ScriptDownloadServer <- function(id, output_to_reproduce, script_name, required_meta_actions) {
+ScriptDownloadServer <- function(id, output_to_reproduce, post_processing = shinymeta::metaAction({}), script_name, required_meta_actions) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -75,7 +76,9 @@ ScriptDownloadServer <- function(id, output_to_reproduce, script_name, required_
               # Load libraries
               MetaLoadLibraries(),
               # create output
-              output_to_reproduce()
+              output_to_reproduce(),
+              # Post-processing
+              post_processing()
             )
           )
         }

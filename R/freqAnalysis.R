@@ -21,6 +21,10 @@ freqAnalysisUI <- function(id) {
           htmlOutput(outputId = ns("SummaryTableF"))
         ),
         fluidRow(
+          align = "center",
+          ScriptDownloadPanel(id = ns("summary_script"), script_title = "summary")
+        ),
+        fluidRow(
           align = 'center',
           div(
             style = "display: inline-block;",
@@ -82,16 +86,23 @@ freqAnalysisUI <- function(id) {
         ),
         fluidRow(
           align = "center",
-          div(
-            radioButtons(
-              inputId = ns('labbepairF_choice'),
-              label = "Download L'abbé plot as:",
-              choices = c('pdf','png')
-            ),
-            downloadButton(
-              outputId = ns('labbepairF_download'),
-              label = "Download L'abbé plot"
+          column(
+            width = 6,
+            div(
+              radioButtons(
+                inputId = ns('labbepairF_choice'),
+                label = "Download L'abbé plot as:",
+                choices = c('pdf','png')
+              ),
+              downloadButton(
+                outputId = ns('labbepairF_download'),
+                label = "Download L'abbé plot"
+              )
             )
+          ),
+          column(
+            width = 6,
+            ScriptDownloadPanel(id = ns("labbe_script"), script_title = "L'abbé plot")
           )
         )
       ),
@@ -178,20 +189,29 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         )
       })
       
+      summary_lines <- shinymeta::metaReactive({
+        if (shinymeta::..(FixRand()) == "fixed") {
+          PairwiseSummary_functionF(shinymeta::..(outcome()), shinymeta::..(freqpair())$MA.Fixed)
+        } else if (shinymeta::..(FixRand()) == "random") {
+          PairwiseSummary_functionF(shinymeta::..(outcome()), shinymeta::..(freqpair())$MA.Random)
+        }
+      })
+      
       output$SummaryTableF <- renderUI({
-        if (FixRand() == "fixed") {
-          return(PairwiseSummary_functionF(outcome(), freqpair()$MA.Fixed))
-        } else if (FixRand() == "random") {
-          return(PairwiseSummary_functionF(outcome(), freqpair()$MA.Random))
+        lines = summary_lines()
+        HTML(paste(strong(lines[1]), lines[2], strong(lines[3]), lines[4], lines[5], sep = "<br/>"))
+      })
+      
+      fit_sentence <- shinymeta::metaReactive({
+        if (shinymeta::..(FixRand()) == "fixed") {
+          PairwiseModelFit_functionF(shinymeta::..(freqpair())$MA.Fixed)
+        } else if (shinymeta::..(FixRand()) == 'random') {
+          PairwiseModelFit_functionF(shinymeta::..(freqpair())$MA.Random)
         }
       })
       
       output$ModelFitF <- renderUI({
-        if (FixRand() == "fixed") {
-          return(PairwiseModelFit_functionF(freqpair()$MA.Fixed))
-        } else if (FixRand() == 'random') {
-          return(PairwiseModelFit_functionF(freqpair()$MA.Random))
-        }
+        HTML(fit_sentence())
       })
       
       output$ForestPlotPairF <- shinymeta::metaRender(
@@ -207,6 +227,22 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         }
       )
       
+      ScriptDownloadServer(
+        id = "summary_script",
+        output_to_reproduce = shinymeta::metaAction({
+          for (line in shinymeta::..(summary_lines())) {
+            print(line)
+          }
+          print("Model fit statistics:")
+          print(shinymeta::..(fit_sentence()))
+        }),
+        script_name = "frequentist_summary",
+        required_meta_actions = list(
+          meta_data_wrangling_functions,
+          meta_freq_analysis_functions,
+          meta_freq_summary_functions
+        )
+      )
       
       ## Forest Plot Download ##
       
@@ -251,18 +287,21 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       })
       outputOptions(output, "labbe_available", suspendWhenHidden = FALSE)
       
-      output$LabbePlotPairF <- renderPlot({
-        if (FixRand() == 'fixed') {
-          meta_analysis <- freqpair()$MA.Fixed
-        } else if (FixRand() == 'random') {
-          meta_analysis <- freqpair()$MA.Random
-        } else {
-          stop("Models effects should be 'fixed' or 'random'")
+      output$LabbePlotPairF <- shinymeta::metaRender(
+        renderFunc = renderPlot,
+        expr = {
+          if (shinymeta::..(FixRand()) == 'fixed') {
+            meta_analysis <- shinymeta::..(freqpair())$MA.Fixed
+          } else if (shinymeta::..(FixRand()) == 'random') {
+            meta_analysis <- shinymeta::..(freqpair())$MA.Random
+          } else {
+            stop("Models effects should be 'fixed' or 'random'")
+          }
+          
+          metafor::labbe(meta_analysis)
+          title(paste0("L'abbé plot from ", shinymeta::..(FixRand()), "-effects model"))
         }
-        
-        metafor::labbe(meta_analysis)
-        title(glue::glue("L'abbé plot from {FixRand()}-effects model"))
-      })
+      )
       
       output$labbepairF_download <- downloadHandler(
         filename = function() {
@@ -290,6 +329,16 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           
           dev.off()
         }
+      )
+      
+      ScriptDownloadServer(
+        id = "labbe_script",
+        output_to_reproduce = output$LabbePlotPairF,
+        script_name = "frequentist_labbe_plot",
+        required_meta_actions = list(
+          meta_data_wrangling_functions,
+          meta_freq_analysis_functions
+        )
       )
       
       ## Reporter Function ##

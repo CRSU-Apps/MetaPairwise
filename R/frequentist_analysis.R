@@ -1,61 +1,63 @@
 
-PairwiseSummary_functionF <- function(outcome, model) {
-  sum <- summary(model)
-  line0 <- paste(strong("Results"))
-  line1 <- paste("Number of studies: ", sum$k, sep = "")
-  if (outcome == "OR") {
-    line2 <- paste0(
-      "Pooled estimate: ",
-      round(exp(sum$b), 2),
-      " (95% CI: ",
-      round(exp(sum$ci.lb), 2),
-      " to ",
-      round(exp(sum$ci.ub), 2),
-      "); p-value: ",
-      round(sum$pval, 3)
+MetaCreatePairwiseSummaryAndFit <- shinymeta::metaAction({
+  PairwiseSummary_functionF <- function(outcome, model) {
+    sum <- summary(model)
+    line0 <- "Results"
+    line1 <- paste0("Number of studies: ", sum$k)
+    if (outcome == "OR") {
+      line2 <- paste0(
+        "Pooled estimate: ",
+        round(exp(sum$b), 2),
+        " (95% CI: ",
+        round(exp(sum$ci.lb), 2),
+        " to ",
+        round(exp(sum$ci.ub), 2),
+        "); p-value: ",
+        round(sum$pval, 3)
+      )
+      line4 <- "Between study standard-deviation (log-odds scale): "
+    } else if (outcome == "RR") {
+      line2 <- paste0(
+        "Pooled estimate: ",
+        round(exp(sum$b), 2),
+        " (95% CI: ",
+        round(exp(sum$ci.lb), 2),
+        " to ",
+        round(exp(sum$ci.ub), 2),
+        "); p-value: ",
+        round(sum$pval, 3)
+      )
+      line4 <- "Between study standard-deviation (log-probability scale): "
+    } else {
+      line2 <- paste(
+        "Pooled estimate: ",
+        round(sum$b, 2),
+        " (95% CI: ",
+        round(sum$ci.lb, 2),
+        " to ",
+        round(sum$ci.ub, 2),
+        "); p-value: ",
+        round(sum$pval, 3)
+      )
+      line4 <- "Between study standard-deviation: "
+    }
+    line3 <- "Heterogeneity results"
+    line4 <- paste0(
+      line4,
+      round(sqrt(sum$tau2), 3),
+      "; I-squared: ",
+      round(sum$I2, 1),
+      "%; P-value for testing heterogeneity: ",
+      round(sum$QEp, 3)
     )
-    line4 <- "Between study standard-deviation (log-odds scale): "
-  } else if (outcome == "RR") {
-    line2 <- paste0(
-      "Pooled estimate: ",
-      round(exp(sum$b), 2),
-      " (95% CI: ",
-      round(exp(sum$ci.lb), 2),
-      " to ",
-      round(exp(sum$ci.ub), 2),
-      "); p-value: ",
-      round(sum$pval, 3)
-    )
-    line4 <- "Between study standard-deviation (log-probability scale): "
-  } else {
-    line2 <- paste(
-      "Pooled estimate: ",
-      round(sum$b, 2),
-      " (95% CI: ",
-      round(sum$ci.lb, 2),
-      " to ",
-      round(sum$ci.ub, 2),
-      "); p-value: ",
-      round(sum$pval, 3)
-    )
-    line4 <- "Between study standard-deviation: "
+    return(c(line0, line1, line2, line3, line4))
   }
-  line3 <- strong("Heterogeneity results")
-  line4 <- paste0(
-    line4,
-    round(sqrt(sum$tau2), 3),
-    "; I-squared: ",
-    round(sum$I2, 1),
-    "%; P-value for testing heterogeneity: ",
-    round(sum$QEp, 3)
-  )
-  HTML(paste(line0, line1, line2, line3, line4, sep = "<br/>"))
-}
 
-PairwiseModelFit_functionF <- function(model) {
-  sum <- summary(model)
-  HTML(paste0("AIC: ", round(sum$fit.stats[3, 1], 2), "; BIC: ", round(sum$fit.stats[4, 1], 2)))
-}
+  PairwiseModelFit_functionF <- function(model) {
+    sum <- summary(model)
+    return(paste0("AIC: ", round(sum$fit.stats[3, 1], 2), "; BIC: ", round(sum$fit.stats[4, 1], 2)))
+  }
+})
 
 #' Create forest plot.
 #'

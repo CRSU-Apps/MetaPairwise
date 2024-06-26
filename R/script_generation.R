@@ -35,7 +35,7 @@ meta_data_wrangling_functions <- list(
   meta_action = .BuildMetaPairwiseExportCode(MetaDataWranglingFunctions)
 )
 meta_freq_forest_plot_functions <- list(
-  file_name = "plot_functions.R",
+  file_name = "forest_plot_functions.R",
   directory = "R",
   meta_action = .BuildMetaPairwiseExportCode(MetaCreatePairwiseForestPlot)
 )
@@ -44,13 +44,19 @@ meta_freq_analysis_functions <- list(
   directory = "R",
   meta_action = .BuildMetaPairwiseExportCode(MetaFrequentistAnalysis)
 )
+meta_freq_summary_functions <- list(
+  file_name = "frequentist_summary_functions.R",
+  directory = "R",
+  meta_action = .BuildMetaPairwiseExportCode(MetaCreatePairwiseSummaryAndFit)
+)
 
 all_meta_pairwise_functions <- list(
   meta_data_definitions,
   meta_data_sorting_functions,
   meta_data_wrangling_functions,
   meta_freq_forest_plot_functions,
-  meta_freq_analysis_functions
+  meta_freq_analysis_functions,
+  meta_freq_summary_functions
 )
 
 

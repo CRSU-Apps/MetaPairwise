@@ -57,7 +57,7 @@ function(input, output, session) {
   output$ContBin <- ContBin
   outputOptions(output, "ContBin", suspendWhenHidden = FALSE) #needed for UI options, but doesn't need displaying itself
   
-  outcome <- reactive({
+  outcome_intermediate <- reactive({
     # different outcome variables if continuous or binary
     if (ContBin() == 'continuous') {
       OutcomeCont()
@@ -66,6 +66,9 @@ function(input, output, session) {
     } else {
       stop("Data type should be 'continuous' or 'binary'")
     }
+  })
+  outcome <- shinymeta::metaReactive({
+    shinymeta::..(outcome_intermediate())
   })
   
   freqAnalysisServer(id = "freqAnalysis", filtered_data, FixRand, outcome, ContBin, Pair_trt, Pair_ctrl)
