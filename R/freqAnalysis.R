@@ -21,10 +21,6 @@ freqAnalysisUI <- function(id) {
           htmlOutput(outputId = ns("SummaryTableF"))
         ),
         fluidRow(
-          align = "center",
-          ScriptDownloadPanel(id = ns("summary_script"), script_title = "summary")
-        ),
-        fluidRow(
           align = 'center',
           div(
             style = "display: inline-block;",
@@ -48,6 +44,10 @@ freqAnalysisUI <- function(id) {
       htmlOutput(
         outputId = ns("ModelFitF"),
         align = 'center'
+      ),
+      fluidRow(
+        align = "center",
+        ScriptDownloadPanel(id = ns("summary_script"), script_title = "summary and fit")
       ),
       fluidRow(
         withSpinner(
