@@ -56,7 +56,11 @@ freqAnalysisUI <- function(id) {
           radioButtons(
             inputId = ns('forestpairF_choice'),
             label = "Download forest plot as:",
-            choices = c('pdf','png')
+            choices = c(
+              "PDF" = "pdf",
+              "PNG" = "png",
+              "JSON" = "json"
+            )
           ),
           downloadButton(
             outputId = ns('forestpairF_download'),
@@ -79,7 +83,10 @@ freqAnalysisUI <- function(id) {
             radioButtons(
               inputId = ns('labbepairF_choice'),
               label = "Download L'abbé plot as:",
-              choices = c('pdf','png')
+              choices = c(
+                "PDF" = "pdf",
+                "PNG" = "png"
+              )
             ),
             downloadButton(
               outputId = ns('labbepairF_download'),
@@ -204,12 +211,22 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           paste0("frequentist_forest_plot.", input$forestpairF_choice)
         },
         content = function(file) {
+          if (input$forestpairF_choice == 'json') {
+            ExportFrequentistJson(
+              meta_analysis = freqpair(),
+              model_effects = FixRand(),
+              outcome_measure = outcome(),
+              filename = file
+            )
+            return()
+          }
+          
           if (input$forestpairF_choice == 'pdf') {
             pdf(file = file, width = 15)
           } else if (input$forestpairF_choice == 'png') {
             png(file = file, width = 1000)
           } else {
-            stop("Only 'pdf' and 'png' file types are supported")
+            stop("Only 'pdf', 'png' and json file types are supported")
           }
           
           CreatePairwiseForestPlot(

@@ -59,7 +59,10 @@ bayesAnalysisUI <- function(id) {
           radioButtons(
             inputId = ns("tracepair_choice"),
             label = "Download trace plot as:",
-            choices = c("pdf", "png")
+            choices = c(
+              "PDF" = "pdf",
+              "PNG" = "png"
+            )
           ),
           downloadButton(
             outputId = ns("tracepair_download"),
@@ -79,7 +82,11 @@ bayesAnalysisUI <- function(id) {
           radioButtons(
             inputId = ns("forestpairB_choice"),
             label = "Download forest plot as:",
-            choices = c("pdf", "png")
+            choices = c(
+              "PDF" = "pdf",
+              "PNG" = "png",
+              "JSON" = "json"
+            )
           ),
           downloadButton(
             outputId = ns("forestpairB_download"),
@@ -255,13 +262,23 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           paste0("bayesian_forest_plot.", input$forestpairB_choice)
         },
         content = function(file) {
+          if (input$forestpairB_choice == 'json') {
+            ExportBayesianJson(
+              meta_analysis = bayespair(),
+              model_effects = FixRand(),
+              outcome_measure = outcome(),
+              filename = file
+            )
+            return()
+          }
+          
           plot <- bayes_forest()
           if (input$forestpairB_choice == "png") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "png")
           } else if (input$forestpairB_choice == "pdf") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "pdf")
           } else {
-            stop("Only 'pdf' and 'png' file types are supported")
+            stop("Only 'pdf', 'png' and 'json' file types are supported")
           }
         }
       )
