@@ -46,6 +46,13 @@ freqAnalysisUI <- function(id) {
         align = 'center'
       ),
       fluidRow(
+        align = "center",
+        downloadButton(
+          outputId = ns("results_export"),
+          label = "Download results JSON"
+        )
+      ),
+      fluidRow(
         withSpinner(
           plotOutput(outputId = ns("ForestPlotPairF"))
         )
@@ -58,8 +65,7 @@ freqAnalysisUI <- function(id) {
             label = "Download forest plot as:",
             choices = c(
               "PDF" = "pdf",
-              "PNG" = "png",
-              "JSON" = "json"
+              "PNG" = "png"
             )
           ),
           downloadButton(
@@ -193,6 +199,18 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         }
       })
       
+      output$results_export <- downloadHandler(
+        filename = "frequentist_results.json",
+        content = function(file) {
+          json <- ExportFrequentistJson(
+            meta_analysis = freqpair(),
+            model_effects = FixRand(),
+            outcome_measure = outcome()
+          )
+          write_file(x = json, file = file)
+        }
+      )
+      
       output$ForestPlotPairF <- renderPlot({
         CreatePairwiseForestPlot(
           reference = Pair_ctrl(),
@@ -211,22 +229,12 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           paste0("frequentist_forest_plot.", input$forestpairF_choice)
         },
         content = function(file) {
-          if (input$forestpairF_choice == 'json') {
-            ExportFrequentistJson(
-              meta_analysis = freqpair(),
-              model_effects = FixRand(),
-              outcome_measure = outcome(),
-              filename = file
-            )
-            return()
-          }
-          
           if (input$forestpairF_choice == 'pdf') {
             pdf(file = file, width = 15)
           } else if (input$forestpairF_choice == 'png') {
             png(file = file, width = 1000)
           } else {
-            stop("Only 'pdf', 'png' and json file types are supported")
+            stop("Only 'pdf' and 'png' file types are supported")
           }
           
           CreatePairwiseForestPlot(

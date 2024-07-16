@@ -1,4 +1,11 @@
-ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure, filename) {
+#' Export the frequentist meta-analysis results to a json string
+#'
+#' @param meta_analysis {metafor} output from function `FreqPair()`.
+#' @param model_effects Type of model effects; either "fixed" or "random".
+#' @param outcome_measure Type of outcome measure; one of "OR", "RR", "RD", "MD", SMD".
+#' 
+#' @return The meta-analysis results in a JSON string.
+ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure) {
   fixed <- meta_analysis$MA.Fixed
   random <- meta_analysis$MA.Random
   
@@ -138,16 +145,25 @@ ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure,
     pooled = pooled
   )
   
-  json <- jsonlite::toJSON(
-    pretty = TRUE,
-    auto_unbox = TRUE,
-    x = data
+  return(
+    jsonlite::toJSON(
+      pretty = TRUE,
+      auto_unbox = TRUE,
+      x = data
+    )
   )
   
   write_file(x = json, file = filename)
 }
 
-ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure, filename) {
+#' Export the bayesian meta-analysis results to a json string
+#'
+#' @param meta_analysis {MetaStan} output from function `BayesPair()`.
+#' @param model_effects Type of model effects; either "fixed" or "random".
+#' @param outcome_measure Type of outcome measure; one of "OR", "RR", "RD", "MD", SMD".
+#' 
+#' @return The meta-analysis results in a JSON string.
+ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure) {
   data <- meta_analysis$MAdata
   fixed <- meta_analysis$MA.Fixed
   random <- meta_analysis$MA.Random
@@ -272,11 +288,11 @@ ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure, fi
     pooled = pooled
   )
   
-  json <- jsonlite::toJSON(
-    pretty = TRUE,
-    auto_unbox = TRUE,
-    x = data
+  return(
+    jsonlite::toJSON(
+      pretty = TRUE,
+      auto_unbox = TRUE,
+      x = data
+    )
   )
-  
-  write_file(x = json, file = filename)
 }

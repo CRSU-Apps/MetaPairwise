@@ -47,6 +47,13 @@ bayesAnalysisUI <- function(id) {
         textOutput(outputId = ns("ModelFitB")),
         style = "text-align: center;"
       ),
+      fluidRow(
+        align = "center",
+        downloadButton(
+          outputId = ns("results_export"),
+          label = "Download results JSON"
+        )
+      ),
       h3("Trace Plot"),
       fluidRow(
         withSpinner(
@@ -84,8 +91,7 @@ bayesAnalysisUI <- function(id) {
             label = "Download forest plot as:",
             choices = c(
               "PDF" = "pdf",
-              "PNG" = "png",
-              "JSON" = "json"
+              "PNG" = "png"
             )
           ),
           downloadButton(
@@ -139,8 +145,6 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           "."
         )
       })
-      
-      
       
       ### Run Bayesian Pairwise MA ###
       #--------------------------#
@@ -233,6 +237,18 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
         }
       })
       
+      output$results_export <- downloadHandler(
+        filename = "bayesian_results.json",
+        content = function(file) {
+          json <- ExportBayesianJson(
+            meta_analysis = bayespair(),
+            model_effects = FixRand(),
+            outcome_measure = outcome()
+          )
+          write_file(x = json, file = file)
+        }
+      )
+      
       output$TracePlot <- renderPlot({
         bayes_trace()
       })
@@ -262,23 +278,13 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           paste0("bayesian_forest_plot.", input$forestpairB_choice)
         },
         content = function(file) {
-          if (input$forestpairB_choice == 'json') {
-            ExportBayesianJson(
-              meta_analysis = bayespair(),
-              model_effects = FixRand(),
-              outcome_measure = outcome(),
-              filename = file
-            )
-            return()
-          }
-          
           plot <- bayes_forest()
           if (input$forestpairB_choice == "png") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "png")
           } else if (input$forestpairB_choice == "pdf") {
             ggsave(file, plot, height = 7, width = 12, units = "in", device = "pdf")
           } else {
-            stop("Only 'pdf', 'png' and 'json' file types are supported")
+            stop("Only 'pdf' and 'png' file types are supported")
           }
         }
       )
