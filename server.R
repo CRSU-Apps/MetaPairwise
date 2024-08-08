@@ -40,7 +40,7 @@ function(input, output, session) {
     shinymeta::..(filtered_data_intermediate())
   })
   
-  ContBin_intermediate <- reactive({
+  continuous_binary_intermediate <- reactive({
     # automatically detect if continuous or binary
     if (max(grepl("^Mean", names(filtered_data())))) {
       return('continuous')
@@ -51,7 +51,7 @@ function(input, output, session) {
     }
   })
   ContBin <- shinymeta::metaReactive({
-    shinymeta::..(ContBin_intermediate())
+    shinymeta::..(continuous_binary_intermediate())
   })
   
   output$ContBin <- ContBin
