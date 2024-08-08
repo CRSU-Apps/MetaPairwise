@@ -124,6 +124,9 @@ ExportMetaPairwiseScript <- function(output_file_name, script_name, prerequisite
     .BuildMetaPairwiseExportCode(expanded_chain = main_content)
   )
   
+  # Add README
+  file.copy("SCRIPT_README.md", file.path(tmp_dir, "README.md"))
+  
   # Create zip file
   zip::zip(zipfile = output_file_name, files = tmp_dir, mode = "cherry-pick")
 }

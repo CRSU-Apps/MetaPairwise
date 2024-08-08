@@ -1,6 +1,15 @@
 
 # load libraries
 
+library(shiny)
+library(shinyBS)
+library(shinycssloaders)
+library(shinydashboard)
+library(shinyjs)
+library(shinymeta)
+library(shinythemes)
+library(shinyWidgets)
+
 MetaLoadLibraries <- shinymeta::metaAction({
   library(dplyr)
   library(forcats)
@@ -14,14 +23,6 @@ MetaLoadLibraries <- shinymeta::metaAction({
   library(rio)
   library(rmarkdown)
   library(rstan)
-  library(shiny)
-  library(shinyBS)
-  library(shinycssloaders)
-  library(shinydashboard)
-  library(shinyjs)
-  library(shinymeta)
-  library(shinythemes)
-  library(shinyWidgets)
   library(tidybayes)
   library(tidyr)
   library(tidyverse)
