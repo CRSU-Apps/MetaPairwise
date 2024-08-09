@@ -1,0 +1,104 @@
+{
+  "individual": [
+    {
+      "study": "Berg 2015",
+      "reference-r": 50,
+      "reference-n": 172,
+      "intervention-r": 50,
+      "intervention-n": 167,
+      "beta": 1.0427,
+      "2.5%": {},
+      "97.5%": {}
+    },
+    {
+      "study": "Kodjikian 2013",
+      "reference-r": 39,
+      "reference-n": 183,
+      "intervention-r": 39,
+      "intervention-n": 191,
+      "beta": 0.9474,
+      "2.5%": {},
+      "97.5%": {}
+    },
+    {
+      "study": "Subramanian 2010",
+      "reference-r": 1,
+      "reference-n": 7,
+      "intervention-r": 5,
+      "intervention-n": 15,
+      "beta": 3,
+      "2.5%": {},
+      "97.5%": {}
+    },
+    {
+      "study": "Biswas 2011a",
+      "reference-r": 7,
+      "reference-n": 27,
+      "intervention-r": 3,
+      "intervention-n": 25,
+      "beta": 0.3896,
+      "2.5%": {},
+      "97.5%": {}
+    },
+    {
+      "study": "Krebs 2013",
+      "reference-r": 34,
+      "reference-n": 163,
+      "intervention-r": 35,
+      "intervention-n": 154,
+      "beta": 1.1159,
+      "2.5%": {},
+      "97.5%": {}
+    },
+    {
+      "study": "Martin 2011",
+      "reference-r": 168,
+      "reference-n": 599,
+      "intervention-r": 159,
+      "intervention-n": 586,
+      "beta": 0.9553,
+      "2.5%": {},
+      "97.5%": {}
+    },
+    {
+      "study": "Chakravarthy 2013",
+      "reference-r": 63,
+      "reference-n": 271,
+      "intervention-r": 41,
+      "intervention-n": 254,
+      "beta": 0.6355,
+      "2.5%": {},
+      "97.5%": {}
+    }
+  ],
+  "pooled": {
+    "results": {
+      "fixed": {
+        "beta": {},
+        "2.5%": {},
+        "97.5%": {}
+      },
+      "random": {
+        "beta": {},
+        "2.5%": {},
+        "97.5%": {}
+      }
+    },
+    "heterogeneity": {
+      "fixed": {
+        "sd": 0
+      },
+      "random": {
+        "sd": {}
+      }
+    },
+    "model_fit": {
+      "fixed": {
+        "r-hat": {}
+      },
+      "random": {
+        "r-hat": {}
+      }
+    }
+  }
+}
