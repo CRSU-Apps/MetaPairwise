@@ -1,11 +1,4 @@
 
-# Functions to call based on selected sort criteria
-.data_page_sort_criteria <- list(
-  "File order" = function(df) NullSort(df),
-  "Study name" = function(df) SortByStudyName(df),
-  "Participant count" = function(df) SortByParticipantCount(df)
-)
-
 #' UI for the load data page.
 #'
 #' @param id ID of the module.
@@ -32,7 +25,7 @@ dataPageUI <- function(id) {
           "Sort studies by:",
           icon(name = "circle-question")
         ),
-        choices = names(.data_page_sort_criteria),
+        choices = names(data_page_sort_criteria),
         selectize = FALSE
       ),
       p("If you wish to explore the app without using your own data, you are welcome to choose one of the example datasets below."),
@@ -117,7 +110,7 @@ dataPageServer <- function(id) {
       cleaned_data <- reactive({
         cleaned_data <- CleanData(loaded_data())
         # Sort data according to selected criteria
-        cleaned_data <- .data_page_sort_criteria[[input$sort_criteria]](cleaned_data)
+        cleaned_data <- data_page_sort_criteria[[input$sort_criteria]](cleaned_data)
         
         return(cleaned_data)
       })

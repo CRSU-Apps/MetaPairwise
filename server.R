@@ -17,7 +17,7 @@ function(input, output, session) {
   iter <- optionsReactives$iter
   burn <- optionsReactives$burn
   
-  filtered_data <- reactive({
+  filtered_data_intermediate <- reactive({
     raw_data <- data()$data
     # Gather the treatments in each study
     study_treatments <- sapply(
@@ -36,8 +36,12 @@ function(input, output, session) {
     )
     return(raw_data[rows, ])
   })
+  filtered_data <- shinymeta::metaReactive({
+    shinymeta::..(filtered_data_intermediate())
+  })
   
-  ContBin <- reactive({           # automatically detect if continuous or binary
+  continuous_binary_intermediate <- reactive({
+    # automatically detect if continuous or binary
     if (max(grepl("^Mean", names(filtered_data())))) {
       return('continuous')
     } else if (max(grepl("^R", names(filtered_data())))) {
@@ -46,11 +50,15 @@ function(input, output, session) {
       stop("Cannot identify data type from column names")
     }
   })
+  ContBin <- shinymeta::metaReactive({
+    shinymeta::..(continuous_binary_intermediate())
+  })
   
   output$ContBin <- ContBin
   outputOptions(output, "ContBin", suspendWhenHidden = FALSE) #needed for UI options, but doesn't need displaying itself
   
-  outcome <- reactive({                  # different outcome variables if continuous or binary
+  outcome_intermediate <- reactive({
+    # different outcome variables if continuous or binary
     if (ContBin() == 'continuous') {
       OutcomeCont()
     } else if (ContBin() == 'binary') {
@@ -58,6 +66,9 @@ function(input, output, session) {
     } else {
       stop("Data type should be 'continuous' or 'binary'")
     }
+  })
+  outcome <- shinymeta::metaReactive({
+    shinymeta::..(outcome_intermediate())
   })
   
   freqAnalysisServer(id = "freqAnalysis", filtered_data, FixRand, outcome, ContBin, Pair_trt, Pair_ctrl)
