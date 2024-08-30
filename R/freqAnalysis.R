@@ -47,11 +47,17 @@ freqAnalysisUI <- function(id) {
       ),
       fluidRow(
         align = "center",
-        downloadButton(
-          outputId = ns("results_export"),
-          label = "Download results JSON"
+        column(
+          width = 6,
+          downloadButton(
+            outputId = ns("results_export"),
+            label = "Download results JSON"
+          )
         ),
-        ScriptDownloadPanel(id = ns("summary_script"), script_title = "summary and fit")
+        column(
+          width = 6,
+          ScriptDownloadPanel(id = ns("summary_script"), script_title = "summary and fit")
+        )
       ),
       fluidRow(
         withSpinner(
