@@ -9,6 +9,7 @@ ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure)
   fixed <- meta_analysis$MA.Fixed
   random <- meta_analysis$MA.Random
   
+  # Get the primary model from the analysis
   if (model_effects == "fixed") {
     model <- fixed
   } else if (model_effects == "random") {
@@ -17,9 +18,17 @@ ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure)
     stop("Model effects must be 'fixed' or 'random'")
   }
   
+  # Exponentiate results if required, else do not transform the results
+  if (outcome_measure == "OR" || outcome_measure == "RR") {
+    transform <- exp
+  } else {
+    transform <- identity
+  }
+  
   pooled_results <- list()
   
-  if (outcome_measure == "OR" || outcome_measure == "RR") {
+  # Binary export
+  if (outcome_measure == "RD" || outcome_measure == "OR" || outcome_measure == "RR") {
     individual <- lapply(
       1:length(model$data$yi),
       function(index) {
@@ -31,60 +40,14 @@ ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure)
             "intervention-r" = model$data$R.1[index],
             "intervention-n" = model$data$N.1[index],
             "weight" = weights(model)[index] / 100,
-            "beta" = exp(model$data$yi[index]),
-            "2.5%" = exp(model$data$yi[index] - 1.96 * model$data$sei[index]),
-            "97.5%" = exp(model$data$yi[index] + 1.96 * model$data$sei[index])
+            "beta" = transform(model$data$yi[index]),
+            "2.5%" = transform(model$data$yi[index] - 1.96 * model$data$sei[index]),
+            "97.5%" = transform(model$data$yi[index] + 1.96 * model$data$sei[index])
           )
         )
       }
     )
-    
-    pooled_results[["fixed"]] <- list(
-      "beta" = exp(fixed$beta[1]),
-      "2.5%" = exp(fixed$ci.lb),
-      "97.5%" = exp(fixed$ci.ub),
-      "p" = fixed$pval
-    )
-    pooled_results[["random"]] <- list(
-      "beta" = exp(random$beta[1]),
-      "2.5%" = exp(random$ci.lb),
-      "97.5%" = exp(random$ci.ub),
-      "p" = random$pval
-    )
-    
-  } else if (outcome_measure == "RD") {
-    individual <- lapply(
-      1:length(model$data$yi),
-      function(index) {
-        return(
-          list(
-            "study" = model$data$Study[index],
-            "reference-r" = model$data$R.2[index],
-            "reference-n" = model$data$N.2[index],
-            "intervention-r" = model$data$R.1[index],
-            "intervention-n" = model$data$N.1[index],
-            "weight" = weights(model)[index] / 100,
-            "beta" = model$data$yi[index],
-            "2.5%" = model$data$yi[index] - 1.96 * model$data$sei[index],
-            "97.5%" = model$data$yi[index] + 1.96 * model$data$sei[index]
-          )
-        )
-      }
-    )
-    
-    pooled_results[["fixed"]] <- list(
-      "beta" = fixed$beta[1],
-      "2.5%" = fixed$ci.lb,
-      "97.5%" = fixed$ci.ub,
-      "p" = fixed$pval
-    )
-    pooled_results[["random"]] <- list(
-      "beta" = random$beta[1],
-      "2.5%" = random$ci.lb,
-      "97.5%" = random$ci.ub,
-      "p" = random$pval
-    )
-    
+    # Continuous export
   } else if (outcome_measure == "MD" || outcome_measure == "SMD") {
     individual <- lapply(
       1:length(model$data$yi),
@@ -106,23 +69,22 @@ ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure)
         )
       }
     )
-    
-    pooled_results[["fixed"]] <- list(
-      "beta" = fixed$beta[1],
-      "2.5%" = fixed$ci.lb,
-      "97.5%" = fixed$ci.ub,
-      "p" = fixed$pval
-    )
-    pooled_results[["random"]] <- list(
-      "beta" = random$beta[1],
-      "2.5%" = random$ci.lb,
-      "97.5%" = random$ci.ub,
-      "p" = random$pval
-    )
-    
   } else {
     stop("Outcome measure must be one of: 'OR', 'RR', 'RD', 'MD' OR 'SMD'")
   }
+  
+  pooled_results[["fixed"]] <- list(
+    "beta" = transform(fixed$beta[1]),
+    "2.5%" = transform(fixed$ci.lb),
+    "97.5%" = transform(fixed$ci.ub),
+    "p" = fixed$pval
+  )
+  pooled_results[["random"]] <- list(
+    "beta" = transform(random$beta[1]),
+    "2.5%" = transform(random$ci.lb),
+    "97.5%" = transform(random$ci.ub),
+    "p" = random$pval
+  )
   
   pooled_herterogeneity <- list(
     fixed = list(
@@ -136,6 +98,7 @@ ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure)
       "p" = random$QEp
     )
   )
+  
   pooled_model_fit <- list(
     fixed = list(
       aic = fixed$fit.stats$ML[3],
@@ -152,6 +115,7 @@ ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure)
     heterogeneity = pooled_herterogeneity,
     model_fit = pooled_model_fit
   )
+  
   data <- list(
     individual = individual,
     pooled = pooled
@@ -178,6 +142,7 @@ ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure) {
   fixed <- meta_analysis$MA.Fixed
   random <- meta_analysis$MA.Random
   
+  # Get the primary model from the analysis
   if (model_effects == "fixed") {
     model <- fixed
   } else if (model_effects == "random") {
@@ -186,9 +151,17 @@ ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure) {
     stop("Model effects must be 'fixed' or 'random'")
   }
   
+  # Exponentiate results if required, else do not transform the results
+  if (outcome_measure == "OR" || outcome_measure == "RR") {
+    transform <- exp
+  } else {
+    transform <- identity
+  }
+  
   pooled_results <- list()
   
-  if (outcome_measure == "OR" || outcome_measure == "RR") {
+  # Binary export
+  if (outcome_measure == "RD" || outcome_measure == "OR" || outcome_measure == "RR") {
     individual <- lapply(
       1:(length(data$Study) - 2),
       function(index) {
@@ -199,55 +172,14 @@ ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure) {
             "reference-n" = data$N.2[index],
             "intervention-r" = data$R.1[index],
             "intervention-n" = data$N.1[index],
-            "beta" = exp(data$yi[index]),
+            "beta" = transform(data$yi[index]),
             "2.5%" = data$lci[index],
             "97.5%" = data$uci[index]
           )
         )
       }
     )
-    
-    pooled_results[["fixed"]] <- list(
-      "beta" = data$est[data$Study == "FE Model"],
-      "2.5%" = data$lci[data$Study == "FE Model"],
-      "97.5%" = data$uci[data$Study == "FE Model"]
-    )
-    pooled_results[["random"]] <- list(
-      "beta" = data$est[data$Study == "RE Model"],
-      "2.5%" = data$lci[data$Study == "RE Model"],
-      "97.5%" = data$uci[data$Study == "RE Model"]
-    )
-    
-  } else if (outcome_measure == "RD") {
-    individual <- lapply(
-      1:(length(data$Study) - 2),
-      function(index) {
-        return(
-          list(
-            "study" = data$Study[index],
-            "reference-r" = data$R.2[index],
-            "reference-n" = data$N.2[index],
-            "intervention-r" = data$R.1[index],
-            "intervention-n" = data$N.1[index],
-            "beta" = data$yi[index],
-            "2.5%" = data$lci[index],
-            "97.5%" = data$uci[index]
-          )
-        )
-      }
-    )
-    
-    pooled_results[["fixed"]] <- list(
-      "beta" = data$est[data$Study == "FE Model"],
-      "2.5%" = data$lci[data$Study == "FE Model"],
-      "97.5%" = data$uci[data$Study == "FE Model"]
-    )
-    pooled_results[["random"]] <- list(
-      "beta" = data$est[data$Study == "RE Model"],
-      "2.5%" = data$lci[data$Study == "RE Model"],
-      "97.5%" = data$uci[data$Study == "RE Model"]
-    )
-    
+    # Continuous export
   } else if (outcome_measure == "MD" || outcome_measure == "SMD") {
     individual <- lapply(
       1:(length(data$Study) - 2),
@@ -268,21 +200,20 @@ ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure) {
         )
       }
     )
-    
-    pooled_results[["fixed"]] <- list(
-      "beta" = data$est[data$Study == "FE Model"],
-      "2.5%" = data$lci[data$Study == "FE Model"],
-      "97.5%" = data$uci[data$Study == "FE Model"]
-    )
-    pooled_results[["random"]] <- list(
-      "beta" = data$est[data$Study == "RE Model"],
-      "2.5%" = data$lci[data$Study == "RE Model"],
-      "97.5%" = data$uci[data$Study == "RE Model"]
-    )
-    
   } else {
     stop("Outcome measure must be one of: 'OR', 'RR', 'RD', 'MD' OR 'SMD'")
   }
+  
+  pooled_results[["fixed"]] <- list(
+    "beta" = data$est[data$Study == "FE Model"],
+    "2.5%" = data$lci[data$Study == "FE Model"],
+    "97.5%" = data$uci[data$Study == "FE Model"]
+  )
+  pooled_results[["random"]] <- list(
+    "beta" = data$est[data$Study == "RE Model"],
+    "2.5%" = data$lci[data$Study == "RE Model"],
+    "97.5%" = data$uci[data$Study == "RE Model"]
+  )
   
   pooled_herterogeneity <- list(
     fixed = list(
@@ -292,6 +223,7 @@ ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure) {
       "sd" = random$fit_sum["tau[1]", 1]
     )
   )
+  
   pooled_model_fit <- list(
     fixed = list(
       "r-hat" = fixed$Rhat.max
@@ -306,6 +238,7 @@ ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure) {
     heterogeneity = pooled_herterogeneity,
     model_fit = pooled_model_fit
   )
+  
   data <- list(
     individual = individual,
     pooled = pooled
