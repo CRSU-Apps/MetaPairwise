@@ -5,11 +5,10 @@
 frontPageUI <- function(id) {
   div(
     h2(
-      "MetaPairwise V1.0.0",
+      "MetaPairwise V1.1.0",
       tags$sup("Beta", style = "color:#6CC0ED"), 
       align = "left"
     ),
-    br(),
     fluidRow(
       column(
         width = 4,
@@ -23,22 +22,34 @@ frontPageUI <- function(id) {
         width = 8,
         h4("About"),
         p("This app allows researchers to conduct pairwise meta-analysis for binary and continuous outcome data without the need for programming knowledge."),
-        br(),
         p("The app contains two main sections:"),
         p(strong("Data"), " - Upload your data or use an example dataset."),
         p(
           strong("Calculator"), " - Meta-analyse the dataset in a frequentist or bayesian framework, generate statistical results and display downloadable figures."
         ),
-        br(),
-        h4("Authors"),
-        p("Will Robinson, Clareece Nevill, Janion Nevill, Nicola Cooper, Alex Sutton"),
+        hr(),
+        p(tags$strong("Latest Updates:")),
+        p(tags$strong("Minor update (2nd September 2024 v1.1.0-beta):")),
+        tags$ul(
+          tags$li("Added reproducible script downloads."),
+          tags$li("Added JSON download of the results.")
+        ),
+        p(tags$strong("Major update (11th March 2024 v1.0.0-beta):")),
+        p(
+          tags$ul(
+            tags$li(
+              "Initial release."
+            )
+          )
+        )
       ),
-      h4("Extra"),
       p(
         "The code for MetaPairwise is open-source and available on the ",
         tags$a(href = "https://github.com/CRSU-Apps/MetaPairwise", "CRSU GitHub Page."),
         target = "_blank"
       ),
+      h4("Authors"),
+      p("Will Robinson, Clareece Nevill, Janion Nevill, Nicola Cooper, Alex Sutton"),
       p("For feedback/questions about this app please email the CRSU team at apps@crsu.org.uk."),
       p(
         "App powered by R and Shiny. All frequentist statistical calculations are performed using R package metafor (Wolfgang Viechtbauer 2010).",
