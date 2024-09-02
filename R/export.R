@@ -86,7 +86,7 @@ ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure)
     "p" = random$pval
   )
   
-  pooled_herterogeneity <- list(
+  pooled_heterogeneity <- list(
     fixed = list(
       "sd" = sqrt(fixed$tau2),
       "i^2" = fixed$I2 / 100,
@@ -112,7 +112,7 @@ ExportFrequentistJson <- function(meta_analysis, model_effects, outcome_measure)
   
   pooled <- list(
     results = pooled_results,
-    heterogeneity = pooled_herterogeneity,
+    heterogeneity = pooled_heterogeneity,
     model_fit = pooled_model_fit
   )
   
@@ -215,7 +215,7 @@ ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure) {
     "97.5%" = data$uci[data$Study == "RE Model"]
   )
   
-  pooled_herterogeneity <- list(
+  pooled_heterogeneity <- list(
     fixed = list(
       "sd" = 0
     ),
@@ -235,7 +235,7 @@ ExportBayesianJson <- function(meta_analysis, model_effects, outcome_measure) {
   
   pooled <- list(
     results = pooled_results,
-    heterogeneity = pooled_herterogeneity,
+    heterogeneity = pooled_heterogeneity,
     model_fit = pooled_model_fit
   )
   
