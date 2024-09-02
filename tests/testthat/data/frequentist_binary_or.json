@@ -1,0 +1,141 @@
+{
+  "individual": [
+    {
+      "study": "Berg 2015",
+      "reference-r": 50,
+      "reference-n": 172,
+      "intervention-r": 50,
+      "intervention-n": 167,
+      "weight": 0.1434,
+      "beta": 1.0427,
+      "2.5%": 0.6537,
+      "97.5%": 1.6632
+    },
+    {
+      "study": "Kodjikian 2013",
+      "reference-r": 39,
+      "reference-n": 183,
+      "intervention-r": 39,
+      "intervention-n": 191,
+      "weight": 0.1316,
+      "beta": 0.9474,
+      "2.5%": 0.5752,
+      "97.5%": 1.5603
+    },
+    {
+      "study": "Subramanian 2010",
+      "reference-r": 1,
+      "reference-n": 7,
+      "intervention-r": 5,
+      "intervention-n": 15,
+      "weight": 0.0086,
+      "beta": 3,
+      "2.5%": 0.2794,
+      "97.5%": 32.2104
+    },
+    {
+      "study": "Biswas 2011a",
+      "reference-r": 7,
+      "reference-n": 27,
+      "intervention-r": 3,
+      "intervention-n": 25,
+      "weight": 0.0213,
+      "beta": 0.3896,
+      "2.5%": 0.0885,
+      "97.5%": 1.7148
+    },
+    {
+      "study": "Krebs 2013",
+      "reference-r": 34,
+      "reference-n": 163,
+      "intervention-r": 35,
+      "intervention-n": 154,
+      "weight": 0.1201,
+      "beta": 1.1159,
+      "2.5%": 0.6544,
+      "97.5%": 1.9029
+    },
+    {
+      "study": "Martin 2011",
+      "reference-r": 168,
+      "reference-n": 599,
+      "intervention-r": 159,
+      "intervention-n": 586,
+      "weight": 0.2572,
+      "beta": 0.9553,
+      "2.5%": 0.7404,
+      "97.5%": 1.2326
+    },
+    {
+      "study": "Chakravarthy 2013",
+      "reference-r": 63,
+      "reference-n": 271,
+      "intervention-r": 41,
+      "intervention-n": 254,
+      "weight": 0.1554,
+      "beta": 0.6355,
+      "2.5%": 0.4104,
+      "97.5%": 0.9841
+    },
+    {
+      "study": "Biswas 2011",
+      "reference-r": 14,
+      "reference-n": 54,
+      "intervention-r": 6,
+      "intervention-n": 50,
+      "weight": 0.0404,
+      "beta": 0.3896,
+      "2.5%": 0.1366,
+      "97.5%": 1.111
+    },
+    {
+      "study": "Schauwvlieghe 2016",
+      "reference-r": 32,
+      "reference-n": 166,
+      "intervention-r": 39,
+      "intervention-n": 161,
+      "weight": 0.1219,
+      "beta": 1.3386,
+      "2.5%": 0.7896,
+      "97.5%": 2.2695
+    }
+  ],
+  "pooled": {
+    "results": {
+      "fixed": {
+        "beta": 0.9297,
+        "2.5%": 0.7903,
+        "97.5%": 1.0937,
+        "p": 0.3791
+      },
+      "random": {
+        "beta": 0.92,
+        "2.5%": 0.7364,
+        "97.5%": 1.1495,
+        "p": 0.4631
+      }
+    },
+    "heterogeneity": {
+      "fixed": {
+        "sd": 0,
+        "i^2": 0.229,
+        "p": 0.2396
+      },
+      "random": {
+        "sd": 0.1824,
+        "i^2": 0.3182,
+        "p": 0.2396
+      }
+    },
+    "model_fit": {
+      "fixed": {
+        "aic": 9.5765,
+        "bic": 9.7738
+      },
+      "random": {
+        "aic": 12.6147,
+        "bic": 13.0091
+      }
+    }
+  }
+}

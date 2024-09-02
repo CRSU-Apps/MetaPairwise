@@ -1,0 +1,94 @@
+{
+  "individual": [
+    {
+      "study": "DRCRnet_2015",
+      "reference-mean": -0.194,
+      "reference-sd": 0.202,
+      "reference-n": 206,
+      "intervention-mean": -0.194,
+      "intervention-sd": 0.202,
+      "intervention-n": 206,
+      "weight": 0.4989,
+      "beta": 0,
+      "2.5%": -0.039,
+      "97.5%": 0.039
+    },
+    {
+      "study": "Ekinci_2014",
+      "reference-mean": -0.211,
+      "reference-sd": 0.16,
+      "reference-n": 50,
+      "intervention-mean": -0.237,
+      "intervention-sd": 0.16,
+      "intervention-n": 50,
+      "weight": 0.193,
+      "beta": -0.026,
+      "2.5%": -0.0887,
+      "97.5%": 0.0367
+    },
+    {
+      "study": "Nepomuceno_2013",
+      "reference-mean": -0.29,
+      "reference-sd": 0.212,
+      "reference-n": 28,
+      "intervention-mean": -0.23,
+      "intervention-sd": 0.113,
+      "intervention-n": 32,
+      "weight": 0.0986,
+      "beta": 0.06,
+      "2.5%": -0.0277,
+      "97.5%": 0.1477
+    },
+    {
+      "study": "Wiley_2016",
+      "reference-mean": -0.132,
+      "reference-sd": 0.173,
+      "reference-n": 62,
+      "intervention-mean": -0.106,
+      "intervention-sd": 0.169,
+      "intervention-n": 62,
+      "weight": 0.2095,
+      "beta": 0.026,
+      "2.5%": -0.0342,
+      "97.5%": 0.0862
+    }
+  ],
+  "pooled": {
+    "results": {
+      "fixed": {
+        "beta": 0.0063,
+        "2.5%": -0.0212,
+        "97.5%": 0.0339,
+        "p": 0.6517
+      },
+      "random": {
+        "beta": 0.0063,
+        "2.5%": -0.0212,
+        "97.5%": 0.0339,
+        "p": 0.6517
+      }
+    },
+    "heterogeneity": {
+      "fixed": {
+        "sd": 0,
+        "i^2": 0,
+        "p": 0.3964
+      },
+      "random": {
+        "sd": 0,
+        "i^2": 0,
+        "p": 0.3964
+      }
+    },
+    "model_fit": {
+      "fixed": {
+        "aic": -15.5756,
+        "bic": -16.1893
+      },
+      "random": {
+        "aic": -13.5756,
+        "bic": -14.803
+      }
+    }
+  }
+}

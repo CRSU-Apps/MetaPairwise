@@ -3,6 +3,7 @@ bayesAnalysisUI <- function(id) {
   div(
     fluidRow(
       align="center",
+      br(),
       actionButton(
         inputId = ns("BayesRun"),
         label = "Run Bayesian meta-analysis",
@@ -47,6 +48,13 @@ bayesAnalysisUI <- function(id) {
         textOutput(outputId = ns("ModelFitB")),
         style = "text-align: center;"
       ),
+      fluidRow(
+        align = "center",
+        downloadButton(
+          outputId = ns("results_export"),
+          label = "Download results JSON"
+        )
+      ),
       h3("Trace Plot"),
       fluidRow(
         withSpinner(
@@ -59,7 +67,10 @@ bayesAnalysisUI <- function(id) {
           radioButtons(
             inputId = ns("tracepair_choice"),
             label = "Download trace plot as:",
-            choices = c("pdf", "png")
+            choices = c(
+              "PDF" = "pdf",
+              "PNG" = "png"
+            )
           ),
           downloadButton(
             outputId = ns("tracepair_download"),
@@ -76,10 +87,14 @@ bayesAnalysisUI <- function(id) {
       fluidRow(
         align = "center",
         div(
+          style = "margin-bottom: 16pt;",
           radioButtons(
             inputId = ns("forestpairB_choice"),
             label = "Download forest plot as:",
-            choices = c("pdf", "png")
+            choices = c(
+              "PDF" = "pdf",
+              "PNG" = "png"
+            )
           ),
           downloadButton(
             outputId = ns("forestpairB_download"),
@@ -132,8 +147,6 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           "."
         )
       })
-      
-      
       
       ### Run Bayesian Pairwise MA ###
       #--------------------------#
@@ -225,6 +238,18 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           return(paste0("Rhat: ", round(bayespair()$MA.Random$Rhat.max, 2)))
         }
       })
+      
+      output$results_export <- downloadHandler(
+        filename = "bayesian_results.json",
+        content = function(file) {
+          json <- ExportBayesianJson(
+            meta_analysis = bayespair(),
+            model_effects = FixRand(),
+            outcome_measure = outcome()
+          )
+          write_file(x = json, file = file)
+        }
+      )
       
       output$TracePlot <- renderPlot({
         bayes_trace()

@@ -1,0 +1,58 @@
+{
+  "individual": [
+    {
+      "study": "DRCRnet_2015",
+      "reference-mean": -0.194,
+      "reference-sd": 0.202,
+      "reference-n": 206,
+      "intervention-mean": -0.194,
+      "intervention-sd": 0.202,
+      "intervention-n": 206,
+      "beta": 0,
+      "2.5%": {},
+      "97.5%": {}
+    },
+    {
+      "study": "Ekinci_2014",
+      "reference-mean": -0.211,
+      "reference-sd": 0.16,
+      "reference-n": 50,
+      "intervention-mean": -0.237,
+      "intervention-sd": 0.16,
+      "intervention-n": 50,
+      "beta": -0.026,
+      "2.5%": {},
+      "97.5%": {}
+    }
+  ],
+  "pooled": {
+    "results": {
+      "fixed": {
+        "beta": {},
+        "2.5%": {},
+        "97.5%": {}
+      },
+      "random": {
+        "beta": {},
+        "2.5%": {},
+        "97.5%": {}
+      }
+    },
+    "heterogeneity": {
+      "fixed": {
+        "sd": 0
+      },
+      "random": {
+        "sd": {}
+      }
+    },
+    "model_fit": {
+      "fixed": {
+        "r-hat": {}
+      },
+      "random": {
+        "r-hat": {}
+      }
+    }
+  }
+}

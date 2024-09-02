@@ -47,7 +47,17 @@ freqAnalysisUI <- function(id) {
       ),
       fluidRow(
         align = "center",
-        ScriptDownloadPanel(id = ns("summary_script"), script_title = "summary and fit")
+        column(
+          width = 6,
+          downloadButton(
+            outputId = ns("results_export"),
+            label = "Download results JSON"
+          )
+        ),
+        column(
+          width = 6,
+          ScriptDownloadPanel(id = ns("summary_script"), script_title = "summary and fit")
+        )
       ),
       fluidRow(
         withSpinner(
@@ -62,7 +72,10 @@ freqAnalysisUI <- function(id) {
             radioButtons(
               inputId = ns('forestpairF_choice'),
               label = "Download forest plot as:",
-              choices = c('pdf','png')
+              choices = c(
+                "PDF" = "pdf",
+                "PNG" = "png"
+              )
             ),
             downloadButton(
               outputId = ns('forestpairF_download'),
@@ -92,7 +105,10 @@ freqAnalysisUI <- function(id) {
               radioButtons(
                 inputId = ns('labbepairF_choice'),
                 label = "Download L'abbé plot as:",
-                choices = c('pdf','png')
+                choices = c(
+                  "PDF" = "pdf",
+                  "PNG" = "png"
+                )
               ),
               downloadButton(
                 outputId = ns('labbepairF_download'),
@@ -209,6 +225,18 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           PairwiseModelFit_functionF(shinymeta::..(freqpair())$MA.Random)
         }
       })
+      
+      output$results_export <- downloadHandler(
+        filename = "frequentist_results.json",
+        content = function(file) {
+          json <- ExportFrequentistJson(
+            meta_analysis = freqpair(),
+            model_effects = FixRand(),
+            outcome_measure = outcome()
+          )
+          write_file(x = json, file = file)
+        }
+      )
       
       output$ModelFitF <- renderUI({
         HTML(fit_sentence())
