@@ -3,6 +3,7 @@ bayesAnalysisUI <- function(id) {
   div(
     fluidRow(
       align="center",
+      br(),
       actionButton(
         inputId = ns("BayesRun"),
         label = "Run Bayesian meta-analysis",
@@ -86,6 +87,7 @@ bayesAnalysisUI <- function(id) {
       fluidRow(
         align = "center",
         div(
+          style = "margin-bottom: 16pt;",
           radioButtons(
             inputId = ns("forestpairB_choice"),
             label = "Download forest plot as:",
