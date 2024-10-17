@@ -1,151 +1,103 @@
 # Running Meta-Analysis Functions #
 #---------------------------------#
 
-
-# Reshaping #
-#-----------#
-
-### Convert long to wide ###
-Long2Wide <- function(data) { #inputs: data frame
-  TempData <- as.data.frame(data)
-  if (ncol(TempData)==6 | ncol(TempData)==5){ #long format
-    TempData<-TempData[order(TempData$StudyID, TempData$T), ]
-    TempData$Arms<- ave(as.numeric(TempData$StudyID),TempData$StudyID,FUN=seq_along)  # create counting variable for number of arms within each study.
-    data_wide <- reshape(TempData, timevar = "Arms",idvar = c("Study", "StudyID"), direction = "wide") # reshape
-  }
-  else {
-    data_wide<- TempData
-  }
-}
-
-### Convert wide to long ###
-Wide2Long <- function(data) { #inputs: data frame
-  TempData <- as.data.frame(data)
-  if (ncol(TempData)==6 | ncol(TempData)==5) {
-    data_long <- TempData
-  } else {                # wide format
-    TempData <- TempData[order(TempData$StudyID), ]
-    data_long <- reshape(TempData, idvar = c("Study", "StudyID"), direction = "long", varying = 3:ncol(TempData))
-    data_long <- data_long[!is.na(data_long$T), ]
-    data_long <- data_long[order(data_long$StudyID, data_long$T), ]
-  }
-}
-
-### Swapping treatment and control as necessary when in wide format ###
-SwapTrt <- function(CONBI, data, trt) { # inputs: continuous/binary; data frame; intended primary treatment 
-  if (CONBI == 'continuous') {  # different variables need swapping
-    list_vars <- c("T", "N", "Mean", "SD")
-  } else {
-    list_vars <- c("T", "N", "R")
-  }
-  for (i in 1:nrow(data)) {   # need to check for each study
-    if (data$T.1[i] != trt) {   # if the study data needs swapping
-      for(var in list_vars) {     # complete the swaps for each variable
-        data[i, paste0(var, ".", 1:2)] <- data[i, paste0(var, ".", 2:1)]
-      }
-    }
-  }
-  return(data)   # output is corrected data frame
-}
-
-## Ensure have StudyIDs and sequential ##
-
-
 # Frequentist #
 #-------------#
 
 ### Frequentist Pairwise ###
 
-FreqPair <- function(data, outcome, CONBI, model) { #inputs: data frame in wide format; outcome type; continuous or binary' fixed or random (or both);
-  if (CONBI == "continuous") {
-    MAdata <- metafor::escalc(
-      measure = outcome,
-      m1i = Mean.1,
-      m2i = Mean.2,
-      sd1i = SD.1,
-      sd2i = SD.2,
-      n1i = N.1,
-      n2i = N.2,
-      data = data
-    )
-  } else if (CONBI == "binary") {
-    MAdata <- metafor::escalc(
-      measure = outcome,
-      ai = R.1,
-      bi = N.1 - R.1,
-      ci = R.2,
-      di = N.2 - R.2,
-      data = data
-    )
-  } else {
-    stop("Outcome type must be either 'continuous' or 'binary'")
-  }
-
-  MAdata$sei <- sqrt(MAdata$vi)  #standard error
-  if (model == "fixed" || model == "both") {
+MetaFrequentistAnalysis <- shinymeta::metaAction({
+  FreqPair <- function(data, outcome, CONBI, model) { #inputs: data frame in wide format; outcome type; continuous or binary' fixed or random (or both);
     if (CONBI == "continuous") {
-      MA.Fixed <- metafor::rma(
+      MAdata <- metafor::escalc(
+        measure = outcome,
         m1i = Mean.1,
         m2i = Mean.2,
         sd1i = SD.1,
         sd2i = SD.2,
         n1i = N.1,
         n2i = N.2,
-        slab = Study,
-        data = MAdata,
-        method = "FE",
-        measure = outcome
+        data = data
       )
     } else if (CONBI == "binary") {
-      MA.Fixed <- metafor::rma(
+      MAdata <- metafor::escalc(
+        measure = outcome,
         ai = R.1,
         bi = N.1 - R.1,
         ci = R.2,
         di = N.2 - R.2,
-        slab = Study,
-        data = MAdata,
-        method = "FE",
-        measure = outcome
+        data = data
       )
+    } else {
+      stop("Outcome type must be either 'continuous' or 'binary'")
     }
-  }
   
-  if (model == "random" || model == "both") {
-    if (CONBI == "continuous") {
-      MA.Random <- metafor::rma(
-        m1i = Mean.1,
-        m2i = Mean.2,
-        sd1i = SD.1,
-        sd2i = SD.2,
-        n1i = N.1,
-        n2i = N.2,
-        slab = Study,
-        data = MAdata,
-        method = "PM",
-        measure = outcome
-      )
-    } else if (CONBI == "binary") {
-      MA.Random <- metafor::rma(
-        ai = R.1,
-        bi = N.1 - R.1,
-        ci = R.2,
-        di = N.2 - R.2,
-        slab = Study,
-        data = MAdata,
-        method = "PM",
-        measure = outcome
-      )
+    MAdata$sei <- sqrt(MAdata$vi)  #standard error
+    if (model == "fixed" || model == "both") {
+      if (CONBI == "continuous") {
+        MA.Fixed <- metafor::rma(
+          m1i = Mean.1,
+          m2i = Mean.2,
+          sd1i = SD.1,
+          sd2i = SD.2,
+          n1i = N.1,
+          n2i = N.2,
+          slab = Study,
+          data = MAdata,
+          method = "FE",
+          measure = outcome
+        )
+      } else if (CONBI == "binary") {
+        MA.Fixed <- metafor::rma(
+          ai = R.1,
+          bi = N.1 - R.1,
+          ci = R.2,
+          di = N.2 - R.2,
+          slab = Study,
+          data = MAdata,
+          method = "FE",
+          measure = outcome
+        )
+      }
     }
-  }
-  
-  return(
-    list(
-      MAdata = MAdata,
-      MA.Random = MA.Random,
-      MA.Fixed = MA.Fixed
+    
+    if (model == "random" || model == "both") {
+      if (CONBI == "continuous") {
+        MA.Random <- metafor::rma(
+          m1i = Mean.1,
+          m2i = Mean.2,
+          sd1i = SD.1,
+          sd2i = SD.2,
+          n1i = N.1,
+          n2i = N.2,
+          slab = Study,
+          data = MAdata,
+          method = "PM",
+          measure = outcome
+        )
+      } else if (CONBI == "binary") {
+        MA.Random <- metafor::rma(
+          ai = R.1,
+          bi = N.1 - R.1,
+          ci = R.2,
+          di = N.2 - R.2,
+          slab = Study,
+          data = MAdata,
+          method = "PM",
+          measure = outcome
+        )
+      }
+    }
+    
+    return(
+      list(
+        MAdata = MAdata,
+        MA.Random = MA.Random,
+        MA.Fixed = MA.Fixed
+      )
     )
-  )
-} 
+  } 
+})
 
 ## DOESN'T WORK UNLESS MODEL=='BOTH'
 

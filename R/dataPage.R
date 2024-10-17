@@ -1,11 +1,4 @@
 
-# Functions to call based on selected sort criteria
-.data_page_sort_criteria <- list(
-  "File order" = function(df) NullSort(df),
-  "Study name" = function(df) SortByStudyName(df),
-  "Participant count" = function(df) SortByParticipantCount(df)
-)
-
 #' UI for the load data page.
 #'
 #' @param id ID of the module.
@@ -32,22 +25,25 @@ dataPageUI <- function(id) {
           "Sort studies by:",
           icon(name = "circle-question")
         ),
-        choices = names(.data_page_sort_criteria),
+        choices = names(data_page_sort_criteria),
         selectize = FALSE
       ),
       p("If you wish to explore the app without using your own data, you are welcome to choose one of the example datasets below."),
       p(
-        "Example datasets are based on (network) meta-analyses reviewing the effect anti-vasuclar endothelial growth factor has on diabetic macular oedema. Visual acuity (VA) outcomes were reported and chosen for these examples. The continuous outcome example is extracted from a meta-analysis by Virgili et al which can be found ",
-        a(href = "https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD007419.pub6/full", "here."),
-        "The binary outcome example is extracted from a meta-analysis by Pham et al which can be found ",
-        a(href = "https://bmjopen.bmj.com/content/9/5/e022031", "here.")
+        "Example datasets are based on (network) meta-analyses reviewing the effect anti-vasuclar endothelial growth factor has on diabetic macular oedema.",
+        "Visual acuity (VA) outcomes were reported and chosen for these examples.",
+        "The continuous outcome example is extracted from a ",
+        a(href = "https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD007419.pub6/full", "meta-analysis by Virgili et al", target="_blank"),
+        ". The binary outcome example is extracted from a ",
+        a(href = "https://bmjopen.bmj.com/content/9/5/e022031", "meta-analysis by Pham et al", target="_blank"),
+        "."
       ),
       radioButtons(
         inputId = ns("ChooseExample"),
         label = "Example Datasets Available",
         choices = c(
-          "Continuous outcome: Change in VA in terms of LogMAR (negative change in LogMAR = improved vision)" = "continuousEx",
-          "Binary outcome: Number of people that improved their best-corrected VA by gaining 15+ letters during a vision test" = "binaryEx"
+          "Binary outcome: Number of people that improved their best-corrected VA by gaining 15+ letters during a vision test" = "binaryEx",
+          "Continuous outcome: Change in VA in terms of LogMAR (negative change in LogMAR = improved vision)" = "continuousEx"
         ),
         width = '100%'
       )
@@ -117,7 +113,7 @@ dataPageServer <- function(id) {
       cleaned_data <- reactive({
         cleaned_data <- CleanData(loaded_data())
         # Sort data according to selected criteria
-        cleaned_data <- .data_page_sort_criteria[[input$sort_criteria]](cleaned_data)
+        cleaned_data <- data_page_sort_criteria[[input$sort_criteria]](cleaned_data)
         
         return(cleaned_data)
       })
