@@ -29,7 +29,7 @@ frontPageUI <- function(id) {
         ),
         hr(),
         p(tags$strong("Latest Updates:")),
-        p(tags$strong("Minor update (2nd September 2024 v1.1.0-beta):")),
+        p(tags$strong("Minor update (17th Octomber 2024 v1.1.0-beta):")),
         tags$ul(
           tags$li("Added reproducible script downloads."),
           tags$li("Added JSON download of the results.")
