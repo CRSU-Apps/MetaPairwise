@@ -30,10 +30,13 @@ dataPageUI <- function(id) {
       ),
       p("If you wish to explore the app without using your own data, you are welcome to choose one of the example datasets below."),
       p(
-        "Example datasets are based on (network) meta-analyses reviewing the effect anti-vasuclar endothelial growth factor has on diabetic macular oedema. Visual acuity (VA) outcomes were reported and chosen for these examples. The continuous outcome example is extracted from a meta-analysis by Virgili et al which can be found ",
-        a(href = "https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD007419.pub6/full", "here."),
-        "The binary outcome example is extracted from a meta-analysis by Pham et al which can be found ",
-        a(href = "https://bmjopen.bmj.com/content/9/5/e022031", "here.")
+        "Example datasets are based on (network) meta-analyses reviewing the effect anti-vasuclar endothelial growth factor has on diabetic macular oedema.",
+        "Visual acuity (VA) outcomes were reported and chosen for these examples.",
+        "The continuous outcome example is extracted from a ",
+        a(href = "https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD007419.pub6/full", "meta-analysis by Virgili et al", target="_blank"),
+        ". The binary outcome example is extracted from a ",
+        a(href = "https://bmjopen.bmj.com/content/9/5/e022031", "meta-analysis by Pham et al", target="_blank"),
+        "."
       ),
       radioButtons(
         inputId = ns("ChooseExample"),

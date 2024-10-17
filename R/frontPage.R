@@ -45,8 +45,7 @@ frontPageUI <- function(id) {
       ),
       p(
         "The code for MetaPairwise is open-source and available on the ",
-        tags$a(href = "https://github.com/CRSU-Apps/MetaPairwise", "CRSU GitHub Page."),
-        target = "_blank"
+        tags$a(href = "https://github.com/CRSU-Apps/MetaPairwise", "CRSU GitHub Page.", target="_blank")
       ),
       h4("Authors"),
       p("Will Robinson, Clareece Nevill, Janion Nevill, Nicola Cooper, Alex Sutton"),
