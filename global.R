@@ -10,6 +10,26 @@ library(shinymeta)
 library(shinythemes)
 library(shinyWidgets)
 
+# Packages must be loaded here to work on ShinyApps.io
+# event though they are loaded in the next metaAction.
+# They need to be in both places in order to launch the app on 
+# ShinyApps.io, and generate reproducible scripts.
+library(dplyr)
+library(forcats)
+library(ggplot2)
+library(glue)
+library(markdown)
+library(metafor)
+library(MetaStan)
+library(purrr)
+library(rintrojs)
+library(rio)
+library(rmarkdown)
+library(rstan)
+library(tidybayes)
+library(tidyr)
+library(tidyverse)
+
 MetaLoadLibraries <- shinymeta::metaAction({
   LoadOrInstall <- function(package_name) {
     if (!require(package_name, character.only = TRUE)) {
