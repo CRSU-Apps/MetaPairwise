@@ -5,7 +5,7 @@
 frontPageUI <- function(id) {
   div(
     h2(
-      "MetaPairwise V1.1.0",
+      "MetaPairwise V1.1.1",
       tags$sup("Beta", style = "color:#6CC0ED"), 
       align = "left"
     ),
@@ -29,7 +29,22 @@ frontPageUI <- function(id) {
         ),
         hr(),
         p(tags$strong("Latest Updates:")),
-        p(tags$strong("Minor update (17th Octomber 2024 v1.1.0-beta):")),
+        p(tags$strong("Patch update (14th May 2025 v1.1.1-beta):")),
+        tags$ul(
+          tags$li("Disabled bayesian analysis temporarily."),
+          tags$ul(
+            tags$li(
+              "See the ",
+              tags$a(
+                href="https://github.com/CRSU-Apps/MetaPairwise/issues/22",
+                target="_blank",
+                "GitHub issue"
+              ),
+              " for details."
+            )
+          )
+        ),
+        p(tags$strong("Minor update (17th October 2024 v1.1.0-beta):")),
         tags$ul(
           tags$li("Added reproducible script downloads."),
           tags$li("Added JSON download of the results.")
