@@ -132,8 +132,9 @@ MetaCreatePairwiseForestPlot <- shinymeta::metaAction({
         (forestTemp$ilab.xpos[1] + forestTemp$ilab.xpos[2]) / 2 ,
         (forestTemp$ilab.xpos[3] + forestTemp$ilab.xpos[4]) / 2
       ),
-      y = model$k + 3,
-      labels = c(reference, intervention)
+      y = model$k + 3.3,
+      labels = c(reference, intervention),
+      pos = 1
     )
     title(glue::glue("Forest plot of studies with overall estimate from {model_effects}-effects model"))
     
