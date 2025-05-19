@@ -4,10 +4,25 @@ bayesAnalysisUI <- function(id) {
     fluidRow(
       align="center",
       br(),
-      actionButton(
-        inputId = ns("BayesRun"),
-        label = "Run Bayesian meta-analysis",
-        class = "btn-primary btn-lg"
+      shinyjs::disabled(
+        actionButton(
+          inputId = ns("BayesRun"),
+          label = "Run Bayesian meta-analysis",
+          class = "btn-primary btn-lg"
+        )
+      ),
+      div(
+        "Bayesian analysis has been temporarily disabled due to a code issue.",
+        span(
+          "See the ",
+          tags$a(
+            href="https://github.com/CRSU-Apps/MetaPairwise/issues/22",
+            target="_blank",
+            "GitHub issue"
+          ),
+          " for details."
+        ),
+        style = "display: inline-block; color: red; font-style: italic; font-weight: bold; padding-right: 20pt;"
       )
     ),
     conditionalPanel(

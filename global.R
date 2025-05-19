@@ -1,6 +1,7 @@
 
 # load libraries
 
+library(rintrojs)
 library(shiny)
 library(shinyBS)
 library(shinycssloaders)
@@ -22,7 +23,6 @@ library(markdown)
 library(metafor)
 library(MetaStan)
 library(purrr)
-library(rintrojs)
 library(rio)
 library(rmarkdown)
 library(rstan)
