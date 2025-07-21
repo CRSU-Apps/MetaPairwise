@@ -59,35 +59,7 @@ freqAnalysisUI <- function(id) {
           ScriptDownloadPanel(id = ns("summary_script"), script_title = "summary and fit")
         )
       ),
-      fluidRow(
-        withSpinner(
-          plotOutput(outputId = ns("ForestPlotPairF"))
-        )
-      ),
-      fluidRow(
-        align = 'center',
-        column(
-          width = 6,
-          div(
-            radioButtons(
-              inputId = ns('forestpairF_choice'),
-              label = "Download forest plot as:",
-              choices = c(
-                "PDF" = "pdf",
-                "PNG" = "png"
-              )
-            ),
-            downloadButton(
-              outputId = ns('forestpairF_download'),
-              label = "Download forest plot"
-            )
-          )
-        ),
-        column(
-          width = 6,
-          ScriptDownloadPanel(id = ns("forest_script"), script_title = "forest plot")
-        )
-      ),
+      FrequentistForestPlotUI(id = ns("ForestPlotPairF")),
       br(),
       conditionalPanel(
         condition = "output.labbe_available",
@@ -242,17 +214,13 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
         HTML(fit_sentence())
       })
       
-      output$ForestPlotPairF <- shinymeta::metaRender(
-        renderFunc = renderPlot,
-        expr = {
-          CreatePairwiseForestPlot(
-            reference = shinymeta::..(Pair_ctrl()),
-            intervention = shinymeta::..(Pair_trt()),
-            meta_analysis = shinymeta::..(freqpair()),
-            model_effects = shinymeta::..(FixRand()),
-            outcome_measure = shinymeta::..(outcome())
-          )
-        }
+      FrequentistForestPlotServer(
+        id = "ForestPlotPairF",
+        freqpair = freqpair,
+        FixRand = FixRand,
+        outcome = outcome,
+        Pair_trt = Pair_trt,
+        Pair_ctrl = Pair_ctrl
       )
       
       ScriptDownloadServer(
@@ -269,44 +237,6 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
           meta_data_wrangling_functions,
           meta_freq_analysis_functions,
           meta_freq_summary_functions
-        )
-      )
-      
-      ## Forest Plot Download ##
-      
-      output$forestpairF_download <- downloadHandler(
-        filename = function() {
-          paste0("frequentist_forest_plot.", input$forestpairF_choice)
-        },
-        content = function(file) {
-          if (input$forestpairF_choice == 'pdf') {
-            pdf(file = file, width = 15)
-          } else if (input$forestpairF_choice == 'png') {
-            png(file = file, width = 1000)
-          } else {
-            stop("Only 'pdf' and 'png' file types are supported")
-          }
-          
-          CreatePairwiseForestPlot(
-            reference = Pair_ctrl(),
-            intervention = Pair_trt(),
-            meta_analysis = freqpair(),
-            model_effects = FixRand(),
-            outcome_measure = outcome()
-          )
-          
-          dev.off()
-        }
-      )
-      
-      ScriptDownloadServer(
-        id = "forest_script",
-        output_to_reproduce = output$ForestPlotPairF,
-        script_name = "frequentist_forest_plot",
-        required_meta_actions = list(
-          meta_data_wrangling_functions,
-          meta_freq_analysis_functions,
-          meta_freq_forest_plot_functions
         )
       )
       
