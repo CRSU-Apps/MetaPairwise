@@ -372,10 +372,10 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
       ## Reporter Function ##
       
       output$FreqReport <- downloadHandler(
-        filename = "Analysis Report.html",
+        filename = "Analysis_Report.html",
         content = function(file) {
           
-          withProgress(
+          shiny::withProgress(
             message = 'Generating file...',
             value = 0.5,
             {
@@ -385,7 +385,7 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
                 file.copy(reporter(freqpair()$MA.Random, filename= "report", open = FALSE), file)
               }
               
-              setProgress(message = 'File generated', value = 1)
+              shiny::setProgress(message = 'File generated', value = 1)
             }
           )
         }
