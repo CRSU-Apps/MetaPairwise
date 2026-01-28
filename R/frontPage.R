@@ -5,7 +5,7 @@
 frontPageUI <- function(id) {
   div(
     h2(
-      "MetaPairwise V1.1.1",
+      "MetaPairwise V1.1.2",
       tags$sup("Beta", style = "color:#6CC0ED"), 
       align = "left"
     ),
@@ -29,9 +29,9 @@ frontPageUI <- function(id) {
         ),
         hr(),
         p(tags$strong("Latest Updates:")),
-        p(tags$strong("Patch update (14th May 2025 v1.1.1-beta):")),
+        p(tags$strong("Patch update (28th January 2026 v1.1.2-beta):")),
         tags$ul(
-          tags$li("Disabled bayesian analysis temporarily."),
+          tags$li("Enabled only odd ration outcome for bayesian analysis."),
           tags$ul(
             tags$li(
               "See the ",
