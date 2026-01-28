@@ -4,14 +4,13 @@ bayesAnalysisUI <- function(id) {
     fluidRow(
       align="center",
       br(),
-      shinyjs::disabled(
-        actionButton(
-          inputId = ns("BayesRun"),
-          label = "Run Bayesian meta-analysis",
-          class = "btn-primary btn-lg"
-        )
+      actionButton(
+        inputId = ns("BayesRun"),
+        label = "Run Bayesian meta-analysis",
+        class = "btn-primary btn-lg"
       ),
       div(
+        id=ns("bayes_warning"),
         "Bayesian analysis has been temporarily disabled due to a code issue.",
         span(
           "See the ",
@@ -179,6 +178,17 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           trt = Pair_trt()
         )
       })
+      
+      observe({
+        if (outcome() == "RR" || outcome() == "RD") {
+          shinyjs::disable("BayesRun")
+          shinyjs::show("bayes_warning")
+        } else {
+          shinyjs::enable("BayesRun")
+          shinyjs::hide("bayes_warning")
+        }
+      })
+      
       
       bayespair <- eventReactive(
         input$BayesRun,
