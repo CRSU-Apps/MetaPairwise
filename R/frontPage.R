@@ -31,7 +31,7 @@ frontPageUI <- function(id) {
         p(tags$strong("Latest Updates:")),
         p(tags$strong("Patch update (28th January 2026 v1.1.2-beta):")),
         tags$ul(
-          tags$li("Enabled only odd ration outcome for bayesian analysis."),
+          tags$li("Enabled odds ratio outcome for bayesian analysis. Risk ratio and risk different remain disabled."),
           tags$ul(
             tags$li(
               "See the ",

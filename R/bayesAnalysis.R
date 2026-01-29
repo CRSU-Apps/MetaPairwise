@@ -11,7 +11,7 @@ bayesAnalysisUI <- function(id) {
       ),
       div(
         id=ns("bayes_warning"),
-        "Bayesian analysis has been temporarily disabled due to a code issue.",
+        "Bayesian analysis has been temporarily disabled for this outcome due to a code issue.",
         span(
           "See the ",
           tags$a(
