@@ -80,6 +80,13 @@ optionsPanelUI <- function(id) {
             label = "Burn-in:",
             value = 400,
             min = 1
+          ),
+          numericInput(
+            inputId = ns("seed"),
+            label = "Random seed:",
+            value = 123,
+            min = 1,
+            step = 1
           )
         )
       )
@@ -97,11 +104,12 @@ optionsPanelServer <- function(id, data) {
       # Interactive help boxes #
       
       steps <- reactive(data.frame(
-        element = paste0("#", session$ns(c("prior", "chains", "iter", "burn"))),
+        element = paste0("#", session$ns(c("prior", "chains", "iter", "burn", "seed"))),
         intro = c("Choose which vague prior to use to initially model the between-study standard deviation (used for random-effects models)",
             "Choose the number of chains. A chain represents a run-through of the analysis, with each chain starting with different values to aid robustness. The results then incorporate all chains.",
             "The number of iterations to run through. A higher number of iterations is likely to lead to more robust results but does take longer.",
-            "The number of iterations to 'burn' (i.e. not include in the results) at the start. In early iterations, estimated parameters are unlikely to have converged and thus are likely to give spurious results.")
+            "The number of iterations to 'burn' (i.e. not include in the results) at the start. In early iterations, estimated parameters are unlikely to have converged and thus are likely to give spurious results.",
+            "The seed for the random number generator. Running the analysis again with the same seed and settings will give identical results.")
       ))
       # Bayesian settings #
       observeEvent(
@@ -132,7 +140,8 @@ optionsPanelServer <- function(id, data) {
           prior = shinymeta::metaReactive({ shinymeta::..(input$prior) }),
           chains = shinymeta::metaReactive({ shinymeta::..(input$chains) }),
           iter = shinymeta::metaReactive({ shinymeta::..(input$iter) }),
-          burn = shinymeta::metaReactive({ shinymeta::..(input$burn) })
+          burn = shinymeta::metaReactive({ shinymeta::..(input$burn) }),
+          seed = shinymeta::metaReactive({ shinymeta::..(input$seed) })
         )
       )
     }
