@@ -17,6 +17,7 @@ params:
   iter: NULL
   burn: NULL
   seed: NULL
+  app_version: NULL
   trace_plot: NULL
   forest_plot: NULL
 ---
@@ -135,6 +136,6 @@ versions <- vapply(packages, function(package) as.character(packageVersion(packa
 ```
 
 Generated on `r format(Sys.time(), "%d %B %Y at %H:%M %Z")` using
-`r R.version.string` on `r utils::sessionInfo()$running`.
+MetaPairwise v`r params$app_version` (beta), `r R.version.string` on `r utils::sessionInfo()$running`.
 
 Key packages: `r paste(packages, versions, collapse = ", ")`.

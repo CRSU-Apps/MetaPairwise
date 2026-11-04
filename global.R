@@ -1,4 +1,7 @@
 
+# Version of the app, displayed on the front page and in reports
+metapairwise_version <- "1.1.2"
+
 # load libraries
 
 library(rintrojs)

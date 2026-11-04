@@ -5,7 +5,7 @@
 frontPageUI <- function(id) {
   div(
     h2(
-      "MetaPairwise V1.1.2",
+      paste0("MetaPairwise V", metapairwise_version),
       tags$sup("Beta", style = "color:#6CC0ED"), 
       align = "left"
     ),
