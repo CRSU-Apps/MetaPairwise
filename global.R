@@ -2,6 +2,9 @@
 # Version of the app, displayed on the front page and in reports
 metapairwise_version <- "1.1.2"
 
+# Whether the app is in beta testing. Shows the "Beta" label on the front page and in reports
+metapairwise_beta <- TRUE
+
 # load libraries
 
 library(rintrojs)

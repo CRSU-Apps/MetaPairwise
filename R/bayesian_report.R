@@ -41,6 +41,7 @@ CreateBayesianReport <- function(
       burn = burn,
       seed = seed,
       app_version = metapairwise_version,
+      app_beta = metapairwise_beta,
       trace_plot = trace_plot,
       forest_plot = forest_plot
     ),

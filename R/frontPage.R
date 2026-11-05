@@ -6,7 +6,7 @@ frontPageUI <- function(id) {
   div(
     h2(
       paste0("MetaPairwise V", metapairwise_version),
-      tags$sup("Beta", style = "color:#6CC0ED"), 
+      if (metapairwise_beta) tags$sup("Beta", style = "color:#6CC0ED"),
       align = "left"
     ),
     fluidRow(
