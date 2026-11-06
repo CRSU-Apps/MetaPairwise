@@ -129,6 +129,11 @@ freqAnalysisUI <- function(id) {
         downloadButton(
           outputId = ns("FreqReport"),
           label = "Generate and Download Analysis Report"
+        ),
+        downloadButton(
+          outputId = ns("FreqRmdReport"),
+          label = "Download Reproducible R Markdown Report",
+          title = "Download a zip file containing an R Markdown report, which can be knitted to re-run this analysis"
         )
       )
     )
@@ -385,6 +390,93 @@ freqAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pa
                 file.copy(reporter(freqpair()$MA.Random, filename= "report", open = FALSE), file)
               }
               
+              shiny::setProgress(message = 'File generated', value = 1)
+            }
+          )
+        }
+      )
+
+      output$FreqRmdReport <- downloadHandler(
+        filename = "frequentist_report.zip",
+        content = function(file) {
+          shiny::withProgress(
+            message = 'Generating file...',
+            value = 0.5,
+            {
+              sections <- list(
+                list(
+                  heading = "Setup",
+                  text = "Load the required packages, and the functions from the `R` directory.",
+                  code = function(ec) shinymeta::expandChain(MetaLoadLibraries(), .expansionContext = ec)
+                ),
+                list(
+                  heading = "Meta-analysis",
+                  text = glue::glue("Run the fixed- and random-effects meta-analyses, and display the {FixRand()}-effects model."),
+                  code = function(ec) {
+                    shinymeta::expandChain(
+                      shinymeta::withMetaMode(shinymeta::metaExpr({
+                        if (shinymeta::..(FixRand()) == "fixed") {
+                          shinymeta::..(freqpair())$MA.Fixed
+                        } else {
+                          shinymeta::..(freqpair())$MA.Random
+                        }
+                      })),
+                      .expansionContext = ec
+                    )
+                  }
+                ),
+                list(
+                  heading = "Summary and model fit",
+                  code = function(ec) {
+                    shinymeta::expandChain(
+                      shinymeta::withMetaMode(shinymeta::metaExpr({
+                        cat(shinymeta::..(summary_lines()), sep = "\n")
+                        cat("Model fit statistics:", shinymeta::..(fit_sentence()), sep = "\n")
+                      })),
+                      .expansionContext = ec
+                    )
+                  }
+                ),
+                list(
+                  heading = "Forest plot",
+                  chunk_options = "fig.width = 12, fig.height = 7",
+                  code = function(ec) shinymeta::expandChain(output$ForestPlotPairF(), .expansionContext = ec)
+                )
+              )
+
+              if (ContBin() == "binary") {
+                sections <- append(
+                  sections,
+                  list(
+                    list(
+                      heading = "L'abbé plot",
+                      code = function(ec) shinymeta::expandChain(output$LabbePlotPairF(), .expansionContext = ec)
+                    )
+                  )
+                )
+              }
+
+              rmd_content <- BuildMetaPairwiseRmd(
+                title = "MetaPairwise Frequentist Analysis Report",
+                introduction = glue::glue(
+                  "{tools::toTitleCase(FixRand())}-effects pairwise meta-analysis of {outcome()}s using frequentist methodology, ",
+                  "comparing {Pair_trt()} to reference treatment {Pair_ctrl()}."
+                ),
+                sections = sections
+              )
+
+              ExportMetaPairwiseReport(
+                output_file_name = file,
+                report_name = "frequentist_report",
+                prerequisite_definitions = list(
+                  meta_data_wrangling_functions,
+                  meta_freq_analysis_functions,
+                  meta_freq_summary_functions,
+                  meta_freq_forest_plot_functions
+                ),
+                rmd_content = rmd_content
+              )
+
               shiny::setProgress(message = 'File generated', value = 1)
             }
           )

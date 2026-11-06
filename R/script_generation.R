@@ -49,6 +49,21 @@ meta_freq_summary_functions <- list(
   directory = "R",
   meta_action = .BuildMetaPairwiseExportCode(MetaCreatePairwiseSummaryAndFit)
 )
+meta_bayes_analysis_functions <- list(
+  file_name = "bayesian_analysis_functions.R",
+  directory = "R",
+  meta_action = .BuildMetaPairwiseExportCode(MetaBayesianAnalysis)
+)
+meta_bayes_forest_plot_functions <- list(
+  file_name = "bayesian_forest_plot_functions.R",
+  directory = "R",
+  meta_action = .BuildMetaPairwiseExportCode(MetaBayesianForestPlot)
+)
+meta_bayes_summary_functions <- list(
+  file_name = "bayesian_summary_functions.R",
+  directory = "R",
+  meta_action = .BuildMetaPairwiseExportCode(MetaBayesianSummary)
+)
 
 all_meta_pairwise_functions <- list(
   meta_data_definitions,
@@ -56,7 +71,10 @@ all_meta_pairwise_functions <- list(
   meta_data_wrangling_functions,
   meta_freq_forest_plot_functions,
   meta_freq_analysis_functions,
-  meta_freq_summary_functions
+  meta_freq_summary_functions,
+  meta_bayes_analysis_functions,
+  meta_bayes_forest_plot_functions,
+  meta_bayes_summary_functions
 )
 
 
@@ -107,17 +125,8 @@ ExportMetaPairwiseScript <- function(output_file_name, script_name, prerequisite
   dir.create(tmp_dir, recursive = TRUE)
   
   # Write prerequisites to files
-  for (definition in prerequisite_definitions) {
-    sub_dir <- file.path(tmp_dir, definition$directory)
-    if (!dir.exists(sub_dir)) {
-      dir.create(sub_dir, recursive = TRUE)
-    }
-    readr::write_lines(
-      file = file.path(sub_dir, definition$file_name),
-      definition$meta_action
-    )
-  }
-  
+  .WriteMetaPairwisePrerequisites(tmp_dir, prerequisite_definitions)
+
   # Write main script to file
   readr::write_lines(
     file = file.path(tmp_dir, glue::glue("{script_name}.R")),
@@ -126,6 +135,106 @@ ExportMetaPairwiseScript <- function(output_file_name, script_name, prerequisite
   
   # Add README
   file.copy("SCRIPT_README.md", file.path(tmp_dir, "README.md"))
+  
+  # Create zip file
+  zip::zip(zipfile = output_file_name, files = tmp_dir, mode = "cherry-pick")
+}
+
+#' Write prerequisite definitions to files within a directory.
+#'
+#' @param directory Directory in which to create the files.
+#' @param prerequisite_definitions Definitions for files to be created.
+.WriteMetaPairwisePrerequisites <- function(directory, prerequisite_definitions) {
+  for (definition in prerequisite_definitions) {
+    sub_dir <- file.path(directory, definition$directory)
+    if (!dir.exists(sub_dir)) {
+      dir.create(sub_dir, recursive = TRUE)
+    }
+    readr::write_lines(
+      file = file.path(sub_dir, definition$file_name),
+      definition$meta_action
+    )
+  }
+}
+
+#' Build the text of a reproducible R Markdown report.
+#'
+#' @param title Title of the report.
+#' @param introduction Text to be placed at the top of the report.
+#' @param sections List of sections, each a list containing:
+#' - `heading`: Section heading.
+#' - `text`: (Optional) Text to be placed before the code chunk.
+#' - `code`: A function which takes an expansion context, and returns the result from a call to `shinymeta::expandChain()`.
+#' - `chunk_options`: (Optional) Options for the code chunk, as a single string, eg. "fig.width = 12".
+#'
+#' @return R Markdown text.
+BuildMetaPairwiseRmd <- function(title, introduction, sections) {
+  # Share an expansion context, so that each reactive is only defined once, in the first chunk which uses it
+  expansion_context <- shinymeta::newExpansionContext()
+  
+  header <- c(
+    "---",
+    glue::glue("title: \"{title}\""),
+    "output: html_document",
+    "---",
+    "",
+    "```{r, include = FALSE}",
+    "knitr::opts_chunk$set(message = FALSE, warning = FALSE)",
+    "```",
+    "",
+    introduction
+  )
+  
+  body <- unlist(
+    lapply(
+      sections,
+      function(section) {
+        code <- .BuildMetaPairwiseExportCode(expanded_chain = section$code(expansion_context))
+        chunk_header <- if (is.null(section$chunk_options)) "```{r}" else glue::glue("```{{r, {section$chunk_options}}}")
+        return(
+          c(
+            "",
+            glue::glue("## {section$heading}"),
+            "",
+            if (!is.null(section$text)) c(section$text, ""),
+            chunk_header,
+            as.character(code),
+            "```"
+          )
+        )
+      }
+    )
+  )
+  
+  return(c(header, body))
+}
+
+#' Export a reproducible R Markdown report to a zip file.
+#'
+#' @param output_file_name Name of the zip file to create.
+#' @param report_name Name of the report to be used in file and directory names.
+#' @param prerequisite_definitions Definitions for files to be created in the "R" directory within the zip file.
+#' @param rmd_content Contents of the R Markdown file, as returned from `BuildMetaPairwiseRmd()`.
+#'
+#' @return Name of the created zip file
+ExportMetaPairwiseReport <- function(output_file_name, report_name, prerequisite_definitions, rmd_content) {
+  # Generate temporary directory name
+  tmp_dir <- file.path(tempfile(), report_name)
+  
+  # Create temporary directories
+  dir.create(tmp_dir, recursive = TRUE)
+  
+  # Write prerequisites to files
+  .WriteMetaPairwisePrerequisites(tmp_dir, prerequisite_definitions)
+  
+  # Write report to file
+  readr::write_lines(
+    file = file.path(tmp_dir, glue::glue("{report_name}.Rmd")),
+    rmd_content
+  )
+  
+  # Add README
+  file.copy("REPORT_README.md", file.path(tmp_dir, "README.md"))
   
   # Create zip file
   zip::zip(zipfile = output_file_name, files = tmp_dir, mode = "cherry-pick")

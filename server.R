@@ -16,6 +16,7 @@ function(input, output, session) {
   chains <- optionsReactives$chains
   iter <- optionsReactives$iter
   burn <- optionsReactives$burn
+  seed <- optionsReactives$seed
   
   filtered_data_intermediate <- reactive({
     raw_data <- data()$data
@@ -73,5 +74,5 @@ function(input, output, session) {
   
   freqAnalysisServer(id = "freqAnalysis", filtered_data, FixRand, outcome, ContBin, Pair_trt, Pair_ctrl)
   
-  bayesAnalysisServer(id = "bayesAnalysis", filtered_data,  FixRand, outcome, ContBin, Pair_trt, Pair_ctrl, prior, iter, chains, burn)
+  bayesAnalysisServer(id = "bayesAnalysis", filtered_data,  FixRand, outcome, ContBin, Pair_trt, Pair_ctrl, prior, iter, chains, burn, seed)
 }

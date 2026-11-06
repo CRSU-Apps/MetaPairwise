@@ -101,7 +101,6 @@ bayesAnalysisUI <- function(id) {
       fluidRow(
         align = "center",
         div(
-          style = "margin-bottom: 16pt;",
           radioButtons(
             inputId = ns("forestpairB_choice"),
             label = "Download forest plot as:",
@@ -115,12 +114,26 @@ bayesAnalysisUI <- function(id) {
             label = "Download forest plot"
           )
         )
+      ),
+      hr(),
+      fluidRow(
+        align = "center",
+        style = "margin-bottom: 16pt;",
+        downloadButton(
+          outputId = ns("BayesReport"),
+          label = "Generate and Download Analysis Report"
+        ),
+        downloadButton(
+          outputId = ns("BayesRmdReport"),
+          label = "Download Reproducible R Markdown Report",
+          title = "Download a zip file containing an R Markdown report, which can be knitted to re-run this analysis"
+        )
       )
     )
   )
 }
 
-bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pair_ctrl, prior, iter, chains, burn) {
+bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, Pair_ctrl, prior, iter, chains, burn, seed) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -139,7 +152,7 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
       # Clear output when options change
       observe({
         analysis_up_to_date(FALSE)
-      }) %>% bindEvent(data(), outcome(), Pair_trt(), Pair_ctrl(), prior(), iter(), chains(), burn())
+      }) %>% bindEvent(data(), outcome(), Pair_trt(), Pair_ctrl(), prior(), iter(), chains(), burn(), seed())
       
       ### Summary sentence of meta-analysis ###
       #-----------------------------------#
@@ -165,103 +178,107 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
       ### Run Bayesian Pairwise MA ###
       #--------------------------#
       
-      LongData <- reactive({
-        # convert wide format to long if need be
-        Wide2Long(data = data()$data)
-      })
-      
-      WideData <- reactive({
-        # convert long format to wide if need be (and ensure trt and ctrl are the right way round)
+      WideData <- shinymeta::metaReactive({
+        "# convert long format to wide if need be (and ensure trt and ctrl are the right way round)"
         SwapTrt(
-          CONBI = ContBin(),
-          data = Long2Wide(data = data()),
-          trt = Pair_trt()
+          CONBI = shinymeta::..(ContBin()),
+          data = Long2Wide(data = shinymeta::..(data())),
+          trt = shinymeta::..(Pair_trt())
         )
       })
       
       observe({
-        if (outcome() == "RR" || outcome() == "RD") {
+        unsupported_outcome <- outcome() == "RR" || outcome() == "RD"
+        invalid_seed <- !is.numeric(seed()) || is.na(seed()) || seed() != round(seed())
+
+        if (unsupported_outcome || invalid_seed) {
           shinyjs::disable("BayesRun")
-          shinyjs::show("bayes_warning")
         } else {
           shinyjs::enable("BayesRun")
+        }
+
+        if (unsupported_outcome) {
+          shinyjs::show("bayes_warning")
+        } else {
           shinyjs::hide("bayes_warning")
         }
       })
       
-      
-      bayespair <- eventReactive(
-        input$BayesRun,
-        {
-          # run Bayesian pairwise MA
-          return(
+      # This is the `shinymeta` equivalent to `shiny::eventReactive({})`
+      bayespair <- shinymeta::metaReactive2({
+        req(input$BayesRun)
+        isolate(
+          shinymeta::metaExpr({
             BayesPair(
-              CONBI = ContBin(),
-              data = WideData(),
-              trt = Pair_trt(),
-              ctrl = Pair_ctrl(),
-              outcome = outcome(),
-              chains = chains(),
-              iter = iter(),
-              warmup = burn(),
+              CONBI = shinymeta::..(ContBin()),
+              data = shinymeta::..(WideData()),
+              trt = shinymeta::..(Pair_trt()),
+              ctrl = shinymeta::..(Pair_ctrl()),
+              outcome = shinymeta::..(outcome()),
+              chains = shinymeta::..(chains()),
+              iter = shinymeta::..(iter()),
+              warmup = shinymeta::..(burn()),
               model = "both",
-              prior = prior()
+              prior = shinymeta::..(prior()),
+              seed = shinymeta::..(seed())
             )
-          )
-        }
-      )
-      
-      bayes_forest <- reactive({
-        return(
-          BayesPairForest(bayespair()$MAdata, outcome = outcome(), model = FixRand()) +
-            ggtitle(glue::glue("Forest plot of studies with overall estimate from {FixRand()}-effects model")) +
-            theme(plot.title = element_text(hjust = 0.5, size = 13, face = "bold"))
+          })
         )
       })
       
-      bayes_trace <- reactive({
-        if (FixRand() == "fixed") {
-          return(
-            stan_trace(bayespair()$MA.Fixed$fit, pars = "theta") +
-              theme(legend.position = "none", aspect.ratio = 0.45, axis.title = element_text(size = 10, face = "bold")) +
-              labs(y = "Pooled estimate", x = "Iteration")
-          )
-        } else if (FixRand() == "random") {
-          return(
-            stan_trace(bayespair()$MA.Random$fit, pars = c("theta","tau")) +
-              theme(
-                legend.position = "none",
-                strip.placement = "outside",
-                aspect.ratio = 0.3,
-                axis.title = element_text(size = 10, face = "bold")
-              ) +
-              labs(x = "Iteration") +
-              facet_wrap(
-                ~parameter,
-                strip.position = "left",
-                nrow = 2,
-                scales = "free",
-                labeller = as_labeller(
-                  c(
-                    theta = "Pooled estimate",
-                    "tau[1]" = "Between-study SD"
-                  )
+      bayes_forest <- shinymeta::metaReactive({
+        BayesPairForest(shinymeta::..(bayespair())$MAdata, outcome = shinymeta::..(outcome()), model = shinymeta::..(FixRand())) +
+          ggtitle(paste0("Forest plot of studies with overall estimate from ", shinymeta::..(FixRand()), "-effects model")) +
+          theme(plot.title = element_text(hjust = 0.5, size = 13, face = "bold"))
+      })
+      
+      bayes_trace <- shinymeta::metaReactive({
+        if (shinymeta::..(FixRand()) == "fixed") {
+          stan_trace(shinymeta::..(bayespair())$MA.Fixed$fit, pars = "theta") +
+            theme(legend.position = "none", aspect.ratio = 0.45, axis.title = element_text(size = 10, face = "bold")) +
+            labs(y = "Pooled estimate", x = "Iteration")
+        } else if (shinymeta::..(FixRand()) == "random") {
+          stan_trace(shinymeta::..(bayespair())$MA.Random$fit, pars = c("theta","tau")) +
+            theme(
+              legend.position = "none",
+              strip.placement = "outside",
+              aspect.ratio = 0.3,
+              axis.title = element_text(size = 10, face = "bold")
+            ) +
+            labs(x = "Iteration") +
+            facet_wrap(
+              ~parameter,
+              strip.position = "left",
+              nrow = 2,
+              scales = "free",
+              labeller = as_labeller(
+                c(
+                  theta = "Pooled estimate",
+                  "tau[1]" = "Between-study SD"
                 )
               )
-          )
+            )
         }
+      })
+      
+      summary_table <- shinymeta::metaReactive({
+        PairwiseSummary_functionB(shinymeta::..(outcome()), shinymeta::..(bayespair()), shinymeta::..(FixRand()))
       })
       
       output$SummaryTableB <- renderUI({
-        PairwiseSummary_functionB(outcome(), bayespair(), FixRand())
+        summary_table()
+      })
+      
+      rhat_sentence <- shinymeta::metaReactive({
+        if (shinymeta::..(FixRand()) == "fixed") {
+          paste0("Rhat: ", round(shinymeta::..(bayespair())$MA.Fixed$Rhat.max, 2))
+        } else if (shinymeta::..(FixRand()) == "random") {
+          paste0("Rhat: ", round(shinymeta::..(bayespair())$MA.Random$Rhat.max, 2))
+        }
       })
       
       output$ModelFitB <- renderText({
-        if (FixRand() == "fixed") {
-          return(paste0("Rhat: ", round(bayespair()$MA.Fixed$Rhat.max, 2)))
-        } else if (FixRand() == "random") {
-          return(paste0("Rhat: ", round(bayespair()$MA.Random$Rhat.max, 2)))
-        }
+        rhat_sentence()
       })
       
       output$results_export <- downloadHandler(
@@ -313,6 +330,121 @@ bayesAnalysisServer <- function(id, data, FixRand, outcome, ContBin, Pair_trt, P
           } else {
             stop("Only 'pdf' and 'png' file types are supported")
           }
+        }
+      )
+
+      ## Reporter Function ##
+
+      output$BayesReport <- downloadHandler(
+        filename = "Bayesian_Analysis_Report.html",
+        content = function(file) {
+          shiny::withProgress(
+            message = "Generating file...",
+            value = 0.5,
+            {
+              CreateBayesianReport(
+                output_file = file,
+                meta_analysis = bayespair(),
+                model_effects = FixRand(),
+                outcome_measure = outcome(),
+                data_type = ContBin(),
+                intervention = Pair_trt(),
+                reference = Pair_ctrl(),
+                prior = prior(),
+                chains = chains(),
+                iter = iter(),
+                burn = burn(),
+                seed = seed(),
+                trace_plot = bayes_trace(),
+                forest_plot = bayes_forest()
+              )
+
+              shiny::setProgress(message = "File generated", value = 1)
+            }
+          )
+        }
+      )
+      
+      output$BayesRmdReport <- downloadHandler(
+        filename = "bayesian_report.zip",
+        content = function(file) {
+          shiny::withProgress(
+            message = "Generating file...",
+            value = 0.5,
+            {
+              sections <- list(
+                list(
+                  heading = "Setup",
+                  text = "Load the required packages, and the functions from the `R` directory.",
+                  code = function(ec) shinymeta::expandChain(MetaLoadLibraries(), .expansionContext = ec)
+                ),
+                list(
+                  heading = "Meta-analysis",
+                  text = glue::glue(
+                    "Run the fixed- and random-effects meta-analyses using MCMC sampling with {chains()} chains of {iter()} iterations each. ",
+                    "The random seed is set to {seed()}, so the results will match those in the app."
+                  ),
+                  code = function(ec) {
+                    shinymeta::expandChain(
+                      shinymeta::withMetaMode(shinymeta::metaExpr({
+                        shinymeta::..(summary_table())
+                      })),
+                      .expansionContext = ec
+                    )
+                  }
+                ),
+                list(
+                  heading = "Model assessment",
+                  text = "If a model has converged, Rhat should be smaller than 1.01 and the trace plot should be 'spiky' and show no signs of distinct patterns.",
+                  chunk_options = "fig.width = 12, fig.height = 7",
+                  code = function(ec) {
+                    shinymeta::expandChain(
+                      shinymeta::withMetaMode(shinymeta::metaExpr({
+                        cat(shinymeta::..(rhat_sentence()), sep = "\n")
+                        shinymeta::..(bayes_trace())
+                      })),
+                      .expansionContext = ec
+                    )
+                  }
+                ),
+                list(
+                  heading = "Forest plot",
+                  chunk_options = "fig.width = 12, fig.height = 7",
+                  code = function(ec) {
+                    shinymeta::expandChain(
+                      shinymeta::withMetaMode(shinymeta::metaExpr({
+                        shinymeta::..(bayes_forest())
+                      })),
+                      .expansionContext = ec
+                    )
+                  }
+                )
+              )
+              
+              rmd_content <- BuildMetaPairwiseRmd(
+                title = "MetaPairwise Bayesian Analysis Report",
+                introduction = glue::glue(
+                  "{tools::toTitleCase(FixRand())}-effects pairwise meta-analysis of {outcome()}s using Bayesian methodology, ",
+                  "comparing {Pair_trt()} to reference treatment {Pair_ctrl()}, with vague prior {prior()}."
+                ),
+                sections = sections
+              )
+              
+              ExportMetaPairwiseReport(
+                output_file_name = file,
+                report_name = "bayesian_report",
+                prerequisite_definitions = list(
+                  meta_data_wrangling_functions,
+                  meta_bayes_analysis_functions,
+                  meta_bayes_summary_functions,
+                  meta_bayes_forest_plot_functions
+                ),
+                rmd_content = rmd_content
+              )
+              
+              shiny::setProgress(message = "File generated", value = 1)
+            }
+          )
         }
       )
     }

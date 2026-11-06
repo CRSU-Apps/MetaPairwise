@@ -1,0 +1,142 @@
+---
+title: "MetaPairwise Bayesian Analysis Report"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+params:
+  meta_analysis: NULL
+  model_effects: NULL
+  outcome_measure: NULL
+  data_type: NULL
+  intervention: NULL
+  reference: NULL
+  prior: NULL
+  chains: NULL
+  iter: NULL
+  burn: NULL
+  seed: NULL
+  app_version: NULL
+  app_beta: FALSE
+  trace_plot: NULL
+  forest_plot: NULL
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+meta_analysis <- params$meta_analysis
+model <- if (params$model_effects == "fixed") meta_analysis$MA.Fixed else meta_analysis$MA.Random
+model_label <- if (params$model_effects == "fixed") "FE Model" else "RE Model"
+
+outcome_names <- c(
+  OR = "odds ratio",
+  RR = "risk ratio",
+  RD = "risk difference",
+  MD = "mean difference",
+  SMD = "standardised mean difference"
+)
+prior_descriptions <- c(
+  "uniform" = "Uniform(0, 2)",
+  "half-cauchy" = "Half-Cauchy(0, 0.5)",
+  "half-normal" = "Half-Normal(0, 1)"
+)
+log_scale <- params$outcome_measure %in% c("OR", "RR")
+
+study_rows <- !(meta_analysis$MAdata$Study %in% c("FE Model", "RE Model"))
+pooled <- meta_analysis$MAdata[meta_analysis$MAdata$Study == model_label, ]
+```
+
+## Analysis
+
+A Bayesian `r params$model_effects`-effects pairwise meta-analysis was conducted to compare
+**`r params$intervention`** with the reference treatment **`r params$reference`**, using the
+`r outcome_names[[params$outcome_measure]]` (`r params$outcome_measure`) as the outcome measure for
+`r params$data_type` data. `r sum(study_rows)` studies were included in the analysis.
+
+The model was fitted using the `MetaStan` package (`r packageVersion("MetaStan")`), which runs
+Markov chain Monte Carlo (MCMC) sampling with `rstan` (`r packageVersion("rstan")`), using a
+`r if (params$data_type == "binary") "binomial" else "normal"` likelihood.
+Sampling was carried out with `r params$chains` chains of `r params$iter` iterations each, of which the
+first `r params$burn` were discarded as burn-in, with the random seed set to `r params$seed`.
+
+Priors:
+
+- Treatment effect`r if (log_scale) " (log scale)"`: Normal(0, 10²)
+- Study baseline effects: Normal(0, 100²)
+`r if (params$model_effects == "random") paste0("- Between-study standard deviation: ", prior_descriptions[[params$prior]])`
+
+## Results
+
+The pooled `r outcome_names[[params$outcome_measure]]` was
+**`r round(pooled$est, 2)` (95% credible interval: `r round(pooled$lci, 2)` to `r round(pooled$uci, 2)`)**.
+
+```{r heterogeneity, results = "asis"}
+if (params$model_effects == "random") {
+  tau <- model$fit_sum["tau[1]", ]
+  cat(
+    "The estimated between-study standard deviation", if (log_scale) " (on the log scale)", " was ",
+    round(tau[[1]], 3), " (95% credible interval: ", round(tau[[4]], 3), " to ", round(tau[[8]], 3), ").",
+    sep = ""
+  )
+} else {
+  cat("For fixed-effects models, the between-study standard deviation is set to 0.")
+}
+```
+
+### Posterior summary
+
+```{r posterior-summary}
+parameters <- if (params$model_effects == "random") c("theta", "tau[1]") else "theta"
+posterior <- as.data.frame(model$fit_sum[parameters, c(1, 3, 4, 6, 8, 9, 10), drop = FALSE])
+rownames(posterior) <- c("Pooled treatment effect", "Between-study SD")[seq_along(parameters)]
+knitr::kable(
+  posterior,
+  digits = 3,
+  col.names = c("Mean", "SD", "2.5%", "50%", "97.5%", "Effective sample size", "Rhat"),
+  caption = if (log_scale) "Treatment effect is on the log scale." else NULL
+)
+```
+
+### Study-level estimates
+
+```{r study-estimates}
+studies <- meta_analysis$MAdata[study_rows, c("Study", "est", "lci", "uci")]
+studies <- studies[order(studies$Study), ]
+knitr::kable(
+  studies,
+  digits = 2,
+  row.names = FALSE,
+  col.names = c("Study", params$outcome_measure, "Lower 95% CI", "Upper 95% CI")
+)
+```
+
+### Forest plot
+
+```{r forest-plot, fig.width = 12, fig.height = 7}
+print(params$forest_plot)
+```
+
+## Model convergence
+
+The maximum Rhat across all parameters was **`r round(model$Rhat.max, 3)`**.
+`r if (model$Rhat.max < 1.01) "This is below 1.01, which suggests the model has converged." else "This is above 1.01, which suggests the model may not have converged. Consider increasing the number of iterations, and inspect the trace plot below."`
+
+A converged model should show a 'spiky' trace plot, with chains overlapping and no distinct patterns.
+
+```{r trace-plot, fig.width = 12, fig.height = 7}
+print(params$trace_plot)
+```
+
+## Software
+
+```{r software}
+packages <- c("MetaStan", "rstan", "metafor", "ggplot2", "tidybayes", "rmarkdown")
+versions <- vapply(packages, function(package) as.character(packageVersion(package)), character(1))
+```
+
+Generated on `r format(Sys.time(), "%d %B %Y at %H:%M %Z")` using
+MetaPairwise v`r params$app_version``r if (isTRUE(params$app_beta)) " (beta)"`, `r R.version.string` on `r utils::sessionInfo()$running`.
+
+Key packages: `r paste(packages, versions, collapse = ", ")`.
