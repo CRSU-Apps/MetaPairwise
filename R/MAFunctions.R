@@ -124,88 +124,92 @@ FreqNMAForest <- function(NMA, model, ref) { #inputs: NMA object; fixed or rando
 #ctrl <- 'Control'
 #outcome <- 'OR'
 
-BayesPair <- function(CONBI, data, trt, ctrl, outcome, chains=2, iter=4000, warmup=400, model, prior) {         # inputs: continuous/binary; data frame (wide); treatment and control interventions; OR/RR/MD etc; number of chains; number of iterations, number of iterations to burn; fixed/random/both; type of prior for tau
-  # prep data #
-  if (CONBI=='binary') {armVars=c(responders="R.", sampleSize="N.")
-  } else {armVars=c(mean="Mean.", std.err="SD.")}
-  StanData <- create_MetaStan_dat(dat = SwapTrt(CONBI=CONBI, data=data, trt=ctrl),      # arrange data such that 'control' columns are first (metastan backwards) and suitable for meta-stan
-                                  armVars=armVars)
-  if (outcome=='OR' | outcome=='RR' | outcome=='RD') {
-    like <- 'binomial'
-  } else {
-    like <- 'normal'
-  }
-  if (prior=='uniform') {
-    prior.value <- 2                      # uniform(0,2)
-  } else if (prior=='half-cauchy') {
-    prior.value <- 0.5                    # hCauchy(0,0.5)
-  } else if (prior=='half-normal') {
-    prior.value <- 1                      # hNormal(0,1)
-  }
-  # Run analysis #
-  if (model=='random' | model=='both') {
-    MA.Random <- meta_stan(data = StanData,
-                         likelihood = like,
-                         re = TRUE,
-                         ncp = TRUE,                     # suggested for small datasets
-                         mu_prior = c(0, 100),           # vague normal prior for all study baseline/control effects
-                         theta_prior = c(0, 10),         # vague normal prior for treatment effect estimate (which is mean of distribution from which all study treatment effects come from)
-                         tau_prior_dist = prior,         # type of prior distribution for tau (between study SD)
-                         tau_prior = prior.value,        # details of prior distribution
-                         chains = chains,
-                         iter = iter,
-                         warmup = warmup,
-                         adapt_delta = 0.99)
-  }
-  if (model=='fixed' | model=='both') {
-    MA.Fixed <- meta_stan(data = StanData,
-                         likelihood = like,
-                         re = FALSE,
-                         ncp = TRUE,                     # suggested for small datasets
-                         mu_prior = c(0, 100),           # vague normal prior for all study baseline/control effects
-                         theta_prior = c(0, 10),         # vague normal prior for treatment effect estimate (which is same for all studies)
-                         chains = chains,
-                         iter = iter,
-                         warmup = warmup,
-                         adapt_delta = 0.99)
-  }
-  # prep output data
-  MAdata <- SwapTrt(CONBI=CONBI, data=data, trt=trt)   # base data
-  if (CONBI=='continuous') {
-    MAdata <- escalc(measure=outcome, m1i=Mean.1, m2i=Mean.2, sd1i=SD.1, sd2i=SD.2, n1i=N.1, n2i=N.2, data=MAdata) # obtain treatment effects
-  } else {
-    MAdata <- escalc(measure=outcome, ai=R.1, bi=N.1-R.1, ci=R.2, di=N.2-R.2, data=MAdata)
-  }
-  if (outcome %in% c('OR','RR')) {
-    MAdata$est <- exp(MAdata$yi)
-    MAdata$lci <- exp(MAdata$yi - 1.96 * sqrt(MAdata$vi))
-    MAdata$uci <- exp(MAdata$yi + 1.96 * sqrt(MAdata$vi))
-    results.fixed <- exp(MA.Fixed$fit_sum['theta', c(1,4,8)])
-    results.random <- exp(MA.Random$fit_sum['theta', c(1,4,8)])
-  } else {
-    MAdata$est <- MAdata$yi
-    MAdata$lci <- MAdata$yi - 1.96 * sqrt(MAdata$vi)
-    MAdata$uci <- MAdata$yi + 1.96 * sqrt(MAdata$vi)
-    results.fixed <- MA.Fixed$fit_sum['theta', c(1,4,8)]
-    results.random <- MA.Random$fit_sum['theta', c(1,4,8)]
-  }
+MetaBayesianAnalysis <- shinymeta::metaAction({
+  BayesPair <- function(CONBI, data, trt, ctrl, outcome, chains=2, iter=4000, warmup=400, model, prior, seed=sample.int(.Machine$integer.max, 1)) {         # inputs: continuous/binary; data frame (wide); treatment and control interventions; OR/RR/MD etc; number of chains; number of iterations, number of iterations to burn; fixed/random/both; type of prior for tau
+    # prep data #
+    if (CONBI=='binary') {armVars=c(responders="R.", sampleSize="N.")
+    } else {armVars=c(mean="Mean.", std.err="SD.")}
+    StanData <- create_MetaStan_dat(dat = SwapTrt(CONBI=CONBI, data=data, trt=ctrl),      # arrange data such that 'control' columns are first (metastan backwards) and suitable for meta-stan
+                                    armVars=armVars)
+    if (outcome=='OR' | outcome=='RR' | outcome=='RD') {
+      like <- 'binomial'
+    } else {
+      like <- 'normal'
+    }
+    if (prior=='uniform') {
+      prior.value <- 2                      # uniform(0,2)
+    } else if (prior=='half-cauchy') {
+      prior.value <- 0.5                    # hCauchy(0,0.5)
+    } else if (prior=='half-normal') {
+      prior.value <- 1                      # hNormal(0,1)
+    }
+    # Run analysis #
+    if (model=='random' | model=='both') {
+      MA.Random <- meta_stan(data = StanData,
+                           likelihood = like,
+                           re = TRUE,
+                           ncp = TRUE,                     # suggested for small datasets
+                           mu_prior = c(0, 100),           # vague normal prior for all study baseline/control effects
+                           theta_prior = c(0, 10),         # vague normal prior for treatment effect estimate (which is mean of distribution from which all study treatment effects come from)
+                           tau_prior_dist = prior,         # type of prior distribution for tau (between study SD)
+                           tau_prior = prior.value,        # details of prior distribution
+                           chains = chains,
+                           iter = iter,
+                           warmup = warmup,
+                           adapt_delta = 0.99,
+                           seed = seed)
+    }
+    if (model=='fixed' | model=='both') {
+      MA.Fixed <- meta_stan(data = StanData,
+                           likelihood = like,
+                           re = FALSE,
+                           ncp = TRUE,                     # suggested for small datasets
+                           mu_prior = c(0, 100),           # vague normal prior for all study baseline/control effects
+                           theta_prior = c(0, 10),         # vague normal prior for treatment effect estimate (which is same for all studies)
+                           chains = chains,
+                           iter = iter,
+                           warmup = warmup,
+                           adapt_delta = 0.99,
+                           seed = seed)
+    }
+    # prep output data
+    MAdata <- SwapTrt(CONBI=CONBI, data=data, trt=trt)   # base data
+    if (CONBI=='continuous') {
+      MAdata <- escalc(measure=outcome, m1i=Mean.1, m2i=Mean.2, sd1i=SD.1, sd2i=SD.2, n1i=N.1, n2i=N.2, data=MAdata) # obtain treatment effects
+    } else {
+      MAdata <- escalc(measure=outcome, ai=R.1, bi=N.1-R.1, ci=R.2, di=N.2-R.2, data=MAdata)
+    }
+    if (outcome %in% c('OR','RR')) {
+      MAdata$est <- exp(MAdata$yi)
+      MAdata$lci <- exp(MAdata$yi - 1.96 * sqrt(MAdata$vi))
+      MAdata$uci <- exp(MAdata$yi + 1.96 * sqrt(MAdata$vi))
+      results.fixed <- exp(MA.Fixed$fit_sum['theta', c(1,4,8)])
+      results.random <- exp(MA.Random$fit_sum['theta', c(1,4,8)])
+    } else {
+      MAdata$est <- MAdata$yi
+      MAdata$lci <- MAdata$yi - 1.96 * sqrt(MAdata$vi)
+      MAdata$uci <- MAdata$yi + 1.96 * sqrt(MAdata$vi)
+      results.fixed <- MA.Fixed$fit_sum['theta', c(1,4,8)]
+      results.random <- MA.Random$fit_sum['theta', c(1,4,8)]
+    }
   
-  MAdata <- bind_cols(data.frame(StudyID.new = seq(from=1, by=1, length=nrow(data))),
-                      MAdata[order(-MAdata$StudyID),])    # reverse ID so that forest plot matched frequentist
-  if (CONBI=='binary') {cols_n <- 9} else {cols_n <- 11}  # number of columns in MAdata differs between binary and continuous
-  if (model=='fixed') {
-    MAdata[nrow(data)+1, -c(3)] <- c(-1, rep(NA,cols_n), results.fixed[1], results.fixed[2], results.fixed[3])
-    MAdata[nrow(data)+1, 3] <- "FE Model"
-  } else if (model=='random') {
-    MAdata[nrow(data)+1, -c(3)] <- c(-1, rep(NA,cols_n), results.random[1], results.random[2], results.random[3])
-    MAdata[nrow(data)+1, 3] <- "RE Model"
-  } else {
-    MAdata[nrow(data)+1, -c(3)] <- c(-1, rep(NA,cols_n), results.fixed[1], results.fixed[2], results.fixed[3])
-    MAdata[nrow(data)+2, -c(3)] <- c(-2, rep(NA,cols_n), results.random[1], results.random[2], results.random[3])
-    MAdata[(nrow(data)+1):(nrow(data)+2), 3] <- c("FE Model", "RE Model")
+    MAdata <- bind_cols(data.frame(StudyID.new = seq(from=1, by=1, length=nrow(data))),
+                        MAdata[order(-MAdata$StudyID),])    # reverse ID so that forest plot matched frequentist
+    if (CONBI=='binary') {cols_n <- 9} else {cols_n <- 11}  # number of columns in MAdata differs between binary and continuous
+    if (model=='fixed') {
+      MAdata[nrow(data)+1, -c(3)] <- c(-1, rep(NA,cols_n), results.fixed[1], results.fixed[2], results.fixed[3])
+      MAdata[nrow(data)+1, 3] <- "FE Model"
+    } else if (model=='random') {
+      MAdata[nrow(data)+1, -c(3)] <- c(-1, rep(NA,cols_n), results.random[1], results.random[2], results.random[3])
+      MAdata[nrow(data)+1, 3] <- "RE Model"
+    } else {
+      MAdata[nrow(data)+1, -c(3)] <- c(-1, rep(NA,cols_n), results.fixed[1], results.fixed[2], results.fixed[3])
+      MAdata[nrow(data)+2, -c(3)] <- c(-2, rep(NA,cols_n), results.random[1], results.random[2], results.random[3])
+      MAdata[(nrow(data)+1):(nrow(data)+2), 3] <- c("FE Model", "RE Model")
+    }
+    list(MAdata=MAdata, MA.Fixed=MA.Fixed, MA.Random=MA.Random)
   }
-  list(MAdata=MAdata, MA.Fixed=MA.Fixed, MA.Random=MA.Random)
-}
+})
 
 #test <- BayesPair(CONBI=CONBI, data=data, trt=trt, ctrl=ctrl, outcome=outcome, model='both', prior='half-cauchy')
 #test$MAdata
@@ -213,59 +217,61 @@ BayesPair <- function(CONBI, data, trt, ctrl, outcome, chains=2, iter=4000, warm
 #stan_trace(test$MA.Random$fit, pars="theta")   # trace plot
 
 ## Forest plot ##
-BayesPairForest <- function(MAdata, model, outcome) {    # inputs: summary MA data, random/fixed/both, OR/RR etc.
-  #prep data#
-  MAdata$Study = str_replace_all(MAdata$Study, "_", " ")
-  if (model=='fixed') {
-    MAdata[(MAdata$Study=='FE Model'),1] <- -1
-    MAdata[(MAdata$Study=='RE Model'),1] <- -2
-  } else if (model=='random') {
-    MAdata[(MAdata$Study=='RE Model'),1] <- -1
-    MAdata[(MAdata$Study=='FE Model'),1] <- -2
-  }
-  scaleFUN <- function(x) sprintf("%.2f", x)   # function to reduce axis labels to 2dp
+MetaBayesianForestPlot <- shinymeta::metaAction({
+  BayesPairForest <- function(MAdata, model, outcome) {    # inputs: summary MA data, random/fixed/both, OR/RR etc.
+    #prep data#
+    MAdata$Study = str_replace_all(MAdata$Study, "_", " ")
+    if (model=='fixed') {
+      MAdata[(MAdata$Study=='FE Model'),1] <- -1
+      MAdata[(MAdata$Study=='RE Model'),1] <- -2
+    } else if (model=='random') {
+      MAdata[(MAdata$Study=='RE Model'),1] <- -1
+      MAdata[(MAdata$Study=='FE Model'),1] <- -2
+    }
+    scaleFUN <- function(x) sprintf("%.2f", x)   # function to reduce axis labels to 2dp
   
-  # create plot #
-  g <- ggplot(aes(est,
-                  StudyID.new),
-              data = MAdata) +
-    # Add vertical lines 
-    geom_vline(xintercept = ifelse(outcome %in% c('OR','RR'),1,0), color = "black",
-               size = 0.5, linetype = "dashed") +
-    geom_hline(yintercept = 0, color = "black", size = 0.5) +
-    # Add horizontal lines
-    geom_pointinterval(size = 0.5, point_size = 2,
-                       aes(xmin = lci, xmax = uci)) +
-    # Add weights squares
-    #geom_point(aes(size = MAdata$weight)) +       # don't have weighted squares as weighting is more complex with GLMs rather than inverse variance?
-    # Add text and labels
-    geom_text(data = mutate_if(MAdata,
-                               is.numeric, round, 2),
-              aes(label = glue("{est} [{lci}, {uci}]"),
-                  x = max(uci)+0.2), hjust = "outward") +
-    theme_classic() + theme(axis.line.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.text.x=element_text(size=11), axis.title.x=element_text(size=13))
-  if (outcome=='OR') {
-    g + labs(x = "Odds Ratio (log scale)", y = element_blank()) +
-      scale_x_continuous(trans='log2', expand = expansion(mult = 0.4), labels=scaleFUN) +
-      geom_text(aes(label = Study, x = min(lci)-0.02), hjust=1)
-  } else if (outcome=='RR') {
-    g + labs(x = "Risk Ratio (log scale)", y = element_blank()) +
-      scale_x_continuous(trans='log2', expand = expansion(mult = 0.4), labels=scaleFUN) +
-      geom_text(aes(label = Study, x = min(lci)-0.02), hjust=1)
-  } else if (outcome=='RD') {
-    g + labs(x = "Risk Difference", y = element_blank()) +
-      scale_x_continuous(expand = expansion(mult = 0.4), labels=scaleFUN) +
-      geom_text(aes(label = Study, x = min(lci)-0.2), hjust=1)
-  } else if (outcome=='MD') {
-    g + labs(x = "Mean Difference", y = element_blank()) +
-      scale_x_continuous(expand = expansion(mult = 0.4), labels=scaleFUN) +
-      geom_text(aes(label = Study, x = min(lci)-0.2), hjust=1)
-  } else {
-    g + labs(x = "Standardised Mean Difference", y = element_blank()) +
-      scale_x_continuous(expand = expansion(mult = 0.4), labels=scaleFUN) +
-      geom_text(aes(label = Study, x = min(lci)-0.2), hjust=1)
+    # create plot #
+    g <- ggplot(aes(est,
+                    StudyID.new),
+                data = MAdata) +
+      # Add vertical lines 
+      geom_vline(xintercept = ifelse(outcome %in% c('OR','RR'),1,0), color = "black",
+                 size = 0.5, linetype = "dashed") +
+      geom_hline(yintercept = 0, color = "black", size = 0.5) +
+      # Add horizontal lines
+      geom_pointinterval(size = 0.5, point_size = 2,
+                         aes(xmin = lci, xmax = uci)) +
+      # Add weights squares
+      #geom_point(aes(size = MAdata$weight)) +       # don't have weighted squares as weighting is more complex with GLMs rather than inverse variance?
+      # Add text and labels
+      geom_text(data = mutate_if(MAdata,
+                                 is.numeric, round, 2),
+                aes(label = glue("{est} [{lci}, {uci}]"),
+                    x = max(uci)+0.2), hjust = "outward") +
+      theme_classic() + theme(axis.line.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.text.x=element_text(size=11), axis.title.x=element_text(size=13))
+    if (outcome=='OR') {
+      g + labs(x = "Odds Ratio (log scale)", y = element_blank()) +
+        scale_x_continuous(trans='log2', expand = expansion(mult = 0.4), labels=scaleFUN) +
+        geom_text(aes(label = Study, x = min(lci)-0.02), hjust=1)
+    } else if (outcome=='RR') {
+      g + labs(x = "Risk Ratio (log scale)", y = element_blank()) +
+        scale_x_continuous(trans='log2', expand = expansion(mult = 0.4), labels=scaleFUN) +
+        geom_text(aes(label = Study, x = min(lci)-0.02), hjust=1)
+    } else if (outcome=='RD') {
+      g + labs(x = "Risk Difference", y = element_blank()) +
+        scale_x_continuous(expand = expansion(mult = 0.4), labels=scaleFUN) +
+        geom_text(aes(label = Study, x = min(lci)-0.2), hjust=1)
+    } else if (outcome=='MD') {
+      g + labs(x = "Mean Difference", y = element_blank()) +
+        scale_x_continuous(expand = expansion(mult = 0.4), labels=scaleFUN) +
+        geom_text(aes(label = Study, x = min(lci)-0.2), hjust=1)
+    } else {
+      g + labs(x = "Standardised Mean Difference", y = element_blank()) +
+        scale_x_continuous(expand = expansion(mult = 0.4), labels=scaleFUN) +
+        geom_text(aes(label = Study, x = min(lci)-0.2), hjust=1)
+    }
   }
-}
+})
 
 #g<- BayesPairForest(test$MAdata, outcome, model='both')
 #g + ggtitle("Forest plot of studies with overall estimate from fixed-effects model")
